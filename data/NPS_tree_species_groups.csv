@@ -1,0 +1,222 @@
+"Species","Group","Canopy_Tree","Native","New"
+"Abies balsamea","Northern Conifer",1,1,NA
+"Acer","Acer sp.",1,1,NA
+"Acer floridanum","Other Native",1,1,NA
+"Acer negundo","Acer sp.",1,1,NA
+"Acer nigrum","Acer sp.",1,1,NA
+"Acer palmatum","Exotic",0,0,NA
+"Acer pensylvanicum","Acer sp.",0,1,NA
+"Acer platanoides","Exotic",0,0,NA
+"Acer rubrum","Acer rubrum",1,1,NA
+"Acer saccharinum","Acer sp.",1,1,NA
+"Acer saccharum","Acer saccharum",1,1,NA
+"Acer sp.","Acer sp.",1,1,NA
+"Acer spicatum","Acer sp.",0,1,NA
+"Aesculus flava","Other Native",1,1,NA
+"Aesculus hippocastanum","Exotic",0,0,NA
+"Ailanthus altissima","Exotic",0,0,NA
+"Albizia julibrissin","Exotic",1,0,NA
+"Alnus serrulata","Understory Tree",0,1,NA
+"Amelanchier","Amelanchier sp.",0,1,NA
+"Amelanchier arborea","Amelanchier sp.",0,1,NA
+"Amelanchier canadensis","Other Native",0,1,NA
+"Amelanchier laevis","Amelanchier sp.",0,1,NA
+"Amelanchier sp.","Amelanchier sp.",0,1,NA
+"Aralia elata","Exotic",0,0,NA
+"Aralia spinosa","Understory Tree",0,1,NA
+"Asimina triloba","Asimina triloba",0,1,NA
+"Betula","Betula sp.",1,1,NA
+"Betula alleghaniensis","Betula sp.",1,1,NA
+"Betula cordifolia","Betula sp.",1,1,NA
+"Betula lenta","Betula lenta",1,1,NA
+"Betula nigra","Betula sp.",1,1,NA
+"Betula papyrifera","Betula sp.",1,1,NA
+"Betula populifolia","Betula sp.",1,1,NA
+"Betula sp.","Betula sp.",1,1,NA
+"Betula X cearulea","Betula sp.",1,1,NA
+"Betulaceae","Other Native",1,1,NA
+"Carpinus caroliniana","Understory Tree",0,1,NA
+"Carya","Carya sp.",1,1,NA
+"Carya alba","Carya alba",1,1,NA
+"Carya cordiformis","Carya cordiformis",1,1,NA
+"Carya glabra","Carya glabra",1,1,NA
+"Carya laciniosa","Carya sp.",1,1,NA
+"Carya ovalis","Carya sp.",1,1,NA
+"Carya ovata","Carya sp.",1,1,NA
+"Carya sp.","Carya sp.",1,1,NA
+"Carya spp.","Carya sp.",1,1,NA
+"Carya tomentosa","Carya sp.",1,1,NA
+"Castanea dentata","Understory Tree",0,1,NA
+"Castanea pumila","Other Native",0,1,NA
+"Catalpa bignonioides","Exotic",0,0,NA
+"Catalpa sp.","Exotic",0,0,NA
+"Catalpa speciosa","Exotic",0,0,NA
+"Celtis laevigata","Other Native",1,1,NA
+"Celtis occidentalis","Celtis sp.",1,1,NA
+"Celtis sp.","Celtis sp.",1,1,NA
+"Cercis canadensis","Understory Tree",0,1,NA
+"Chionanthus virginicus","Understory Tree",0,1,NA
+"Cladrastis kentukea","Other Native",1,1,NA
+"Cornus alternifolia","Understory Tree",0,1,NA
+"Cornus florida","Understory Tree",0,1,NA
+"Cornus sp.","Understory Tree",0,1,NA
+"Cornus spp.","Understory Tree",0,1,NA
+"Crataegus","Post Ag",0,0,NA
+"Crataegus crus-galli","Post Ag",0,0,NA
+"Crataegus macrosperma","Post Ag",0,1,NA
+"Crataegus sp.","Post Ag",0,0,NA
+"Crataegus sp. A","Post Ag",0,0,NA
+"Crataegus sp. B","Post Ag",0,0,NA
+"Diospyros virginiana","Diospyros virginiana",1,1,NA
+"Fabaceae","Post Ag",0,0,NA
+"Fagus grandifolia","Fagus grandifolia",1,1,NA
+"Fraxinus","Fraxinus sp.",0,1,NA
+"Fraxinus americana","Fraxinus americana",0,1,NA
+"Fraxinus nigra","Fraxinus sp.",0,1,NA
+"Fraxinus pennsylvanica","Fraxinus sp.",0,1,NA
+"Fraxinus profunda","Fraxinus sp.",0,1,NA
+"Fraxinus sp.","Fraxinus sp.",0,1,NA
+"Fraxinus spp.","Fraxinus sp.",0,1,NA
+"Gleditsia triacanthos","Other Native",0,1,NA
+"Gymnocladus dioicus","Other Native",1,1,NA
+"Halesia tetraptera","Other Native",1,1,NA
+"Ilex opaca","Ilex opaca",0,1,NA
+"Juglans","Juglans sp.",1,1,NA
+"Juglans cinerea","Juglans sp.",1,1,NA
+"Juglans nigra","Juglans sp.",1,1,NA
+"Juglans sp.","Juglans sp.",1,1,NA
+"Juniperus virginiana","Juniperus virginiana",0,1,NA
+"Larix decidua","Exotic",0,0,NA
+"Larix laricina","Northern Conifer",1,1,NA
+"Larix sp.","Exotic",0,0,NA
+"Ligustrum","Exotic",0,0,NA
+"Liquidambar styraciflua","Liquidambar styraciflua",1,1,NA
+"Liriodendron tulipifera","Liriodendron tulipifera",1,1,NA
+"Maclura pomifera","Other Native",1,1,NA
+"Magnolia acuminata","Magnolia sp.",1,1,NA
+"Magnolia fraseri","Magnolia sp.",1,1,NA
+"Magnolia grandiflora","Magnolia sp.",1,1,NA
+"Magnolia tripetala","Magnolia sp.",1,1,NA
+"Magnolia virginiana","Magnolia sp.",1,1,NA
+"Malus","Post Ag",0,0,NA
+"Malus baccata","Post Ag",0,0,NA
+"Malus coronaria","Post Ag",0,0,NA
+"Malus prunifolia","Post Ag",0,0,NA
+"Malus sieboldii","Post Ag",0,0,NA
+"Malus sp.","Post Ag",0,0,NA
+"Malus spp.","Post Ag",0,0,NA
+"Morella cerifera","Other Native",0,1,NA
+"Morus alba","Exotic",0,0,NA
+"Morus rubra","Other Native",0,1,NA
+"Nyssa biflora","Other Native",1,1,NA
+"Nyssa sylvatica","Nyssa sylvatica",1,1,NA
+"Ostrya virginiana","Understory Tree",0,1,NA
+"Oxydendrum arboreum","Understory Tree",0,1,NA
+"Paulownia tomentosa","Exotic",0,0,NA
+"Persea","Other Native",0,1,NA
+"Persea palustris","Understory Tree",0,1,NA
+"Phellodendron lavallei","Exotic",1,0,NA
+"Photinia villosa","Exotic",0,0,NA
+"Picea","Northern Conifer",1,1,NA
+"Picea abies","Exotic",0,0,NA
+"Picea glauca","Northern Conifer",1,1,NA
+"Picea mariana","Northern Conifer",1,1,NA
+"Picea rubens","Northern Conifer",1,1,NA
+"Pinus","Pinus sp.",1,1,NA
+"Pinus banksiana","Pinus sp.",1,1,NA
+"Pinus echinata","Pinus sp.",1,1,NA
+"Pinus pungens","Pinus sp.",1,1,NA
+"Pinus resinosa","Pinus sp.",1,1,NA
+"Pinus rigida","Pinus sp.",1,1,NA
+"Pinus sp.","Pinus sp.",1,1,NA
+"Pinus strobus","Pinus strobus",1,1,NA
+"Pinus sylvestris","Exotic",0,0,NA
+"Pinus taeda","Pinus sp.",1,1,NA
+"Pinus virginiana","Pinus virginiana",1,1,NA
+"Platanus occidentalis","Platanus occidentalis",1,1,NA
+"Populus","Populus sp.",1,1,NA
+"Populus alba","Exotic",1,0,NA
+"Populus deltoides","Populus sp.",1,1,NA
+"Populus grandidentata","Populus sp.",1,1,NA
+"Populus sp.","Other Native",1,1,NA
+"Populus tremuloides","Populus sp.",1,1,NA
+"Prunus","Prunus sp.",1,1,NA
+"Prunus americana","Prunus sp.",1,1,NA
+"Prunus avium","Exotic",0,0,NA
+"Prunus cerasus","Exotic",0,0,NA
+"Prunus pensylvanica","Prunus sp.",1,1,NA
+"Prunus serotina","Prunus serotina",1,1,NA
+"Prunus sp.","Prunus sp.",1,1,NA
+"Prunus spp.","Prunus sp.",1,1,NA
+"Prunus virginiana","Prunus sp.",1,1,NA
+"Pyrus","Post Ag",0,0,NA
+"Pyrus betulifolia","Post Ag",0,0,NA
+"Pyrus calleryana","Exotic",0,0,NA
+"Pyrus communis","Post Ag",0,0,NA
+"Pyrus pyrifolia","Post Ag",0,0,NA
+"Pyrus sp.","Post Ag",0,0,NA
+"Pyrus spp.","Post Ag",0,0,NA
+"Quercus","Quercus sp.",1,1,NA
+"Quercus (Red group)","Quercus sp.",1,1,NA
+"Quercus (White group)","Quercus sp.",1,1,NA
+"Quercus alba","Quercus alba",1,1,NA
+"Quercus bicolor","Quercus sp.",1,1,NA
+"Quercus coccinea","Quercus coccinea",1,1,NA
+"Quercus falcata","Quercus sp.",1,1,NA
+"Quercus ilicifolia","Quercus sp.",0,1,NA
+"Quercus macrocarpa","Quercus sp.",1,1,NA
+"Quercus marilandica","Quercus sp.",1,1,NA
+"Quercus michauxii","Quercus sp.",1,1,NA
+"Quercus montana","Quercus sp.",1,1,NA
+"Quercus muehlenbergii","Quercus sp.",1,1,NA
+"Quercus nigra","Quercus sp.",1,1,NA
+"Quercus pagoda","Quercus sp.",1,1,NA
+"Quercus palustris","Quercus sp.",1,1,NA
+"Quercus phellos","Quercus sp.",1,1,NA
+"Quercus prinus","Quercus prinus",1,1,NA
+"Quercus rubra","Quercus rubra",1,1,NA
+"Quercus shumardii","Quercus sp.",1,1,NA
+"Quercus sp.","Quercus sp.",1,1,NA
+"Quercus spp.","Quercus sp.",1,1,NA
+"Quercus stellata","Quercus sp.",1,1,NA
+"Quercus velutina","Quercus velutina",1,1,NA
+"Quercus X benderi","Quercus sp.",1,1,NA
+"Quercus X bushii","Quercus sp.",1,1,NA
+"Quercus X fernowii","Quercus sp.",1,1,NA
+"Quercus X willdenowiana","Quercus sp.",1,1,NA
+"Rhamnus cathartica","Exotic",0,0,NA
+"Rhus typhina","Understory Tree",0,1,NA
+"Robinia pseudoacacia","Robinia pseudoacacia",0,1,NA
+"Rosaceae","Other Native",0,1,NA
+"Salix","Other Native",1,1,NA
+"Salix alba","Exotic",0,0,NA
+"Salix discolor","Other Native",1,1,NA
+"Sassafras albidum","Understory Tree",0,1,NA
+"Sophora japonica","Exotic",0,0,NA
+"Sorbus americana","Understory Tree",0,1,NA
+"Thuja occidentalis","Other Native",1,1,NA
+"Tilia americana","Tilia americana",1,1,NA
+"Tsuga canadensis","Tsuga canadensis",1,1,NA
+"Ulmus","Ulmus sp.",1,1,NA
+"Ulmus alata","Ulmus sp.",1,1,NA
+"Ulmus americana","Ulmus americana",1,1,NA
+"Ulmus pumila","Exotic",0,0,NA
+"Ulmus rubra","Ulmus sp.",1,1,NA
+"Ulmus sp.","Ulmus sp.",1,1,NA
+"Ulmus spp.","Ulmus sp.",1,1,NA
+"Unknown Conifer","Other Native",1,1,NA
+"Unknown Hardwood","Other Native",1,1,NA
+"Unknown species","Other Native",1,1,NA
+"Unknown Tree","Other Native",1,1,NA
+"Unknown Tree ","Other Native",1,1,NA
+"Unknown Tree - 01","Other Native",1,1,NA
+"Unknown Tree - 02","Other Native",1,1,NA
+"Unknown Tree - 04","Other Native",1,1,NA
+"Viburnum prunifolium","Understory Tree",0,1,NA
+"Castanea sp.","Other Native",1,1,1
+"Malus pumila","Post Ag",0,0,1
+"Rhus sp.","Other Native",0,1,1
+"Rosaceae Family","Other Native",0,1,1
+"Salix nigra","Other Native",1,1,1
+"Salix sp.","Other Native",0,1,1
+"Taxus","Exotic",0,0,1
