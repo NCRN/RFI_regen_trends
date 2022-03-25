@@ -2172,6 +2172,7 @@ names(comp_data_c3)
 
 comp_data_c3[, 8:16][is.na(comp_data_c3[,8:16])] <- 0
 
+# This approach adds to 1- weights each stem equally, vs. 2nd process weights each plot equally.
 comp_park <- comp_data_c3 %>% group_by(Network, Unit_Code) %>% 
   summarize(sap_ba_tot = sum(Sap_BA_NatCan + Sap_BA_NatOth + Sap_BA_Exotic),
             sap_dens_tot = sum(Sap_Dens_NatCan + Sap_Dens_NatOth + Sap_Dens_Exotic),
@@ -2186,8 +2187,47 @@ comp_park <- comp_data_c3 %>% group_by(Network, Unit_Code) %>%
             seed_dens_pct_NatOth = sum(Seed_Dens_NatOth)/seed_dens_tot,
             seed_dens_pct_Exotic = sum(Seed_Dens_Exotic)/seed_dens_tot)
 
+
 comp_park <- comp_park %>% mutate(sap_ba_check = sap_ba_pct_NatCan + sap_ba_pct_NatOth + sap_ba_pct_Exotic,
                                   sap_dens_check = sap_dens_pct_NatCan + sap_dens_pct_NatOth + sap_dens_pct_Exotic,
                                   seed_dens_check = seed_dens_pct_NatCan + seed_dens_pct_NatOth + seed_dens_pct_Exotic)
+
+# The process below doesn't add to 1
+comp_park2 <- comp_data_c3 %>% #group_by(Network, Unit_Code %>% 
+                mutate(sap_ba_tot = Sap_BA_NatCan + Sap_BA_NatOth + Sap_BA_Exotic,
+                       sap_dens_tot = Sap_Dens_NatCan + Sap_Dens_NatOth + Sap_Dens_Exotic,
+                       seed_dens_tot = Seed_Dens_NatCan + Seed_Dens_NatOth + Seed_Dens_Exotic,
+                       sap_ba_NatCan = Sap_BA_NatCan/sap_ba_tot,
+                       sap_ba_NatOth = Sap_BA_NatOth/sap_ba_tot,
+                       sap_ba_Exotic = Sap_BA_Exotic/sap_ba_tot,
+                       sap_dens_NatCan = Sap_Dens_NatCan/sap_dens_tot,
+                       sap_dens_NatOth = Sap_Dens_NatOth/sap_dens_tot,
+                       sap_dens_Exotic = Sap_Dens_Exotic/sap_dens_tot,
+                       seed_dens_NatCan = Seed_Dens_NatCan/seed_dens_tot,
+                       seed_dens_NatOth = Seed_Dens_NatOth/seed_dens_tot,
+                       seed_dens_Exotic = Seed_Dens_Exotic/seed_dens_tot) %>% 
+                group_by(Network, Unit_Code) %>% 
+                summarize(sap_ba_pct_NatCan = sum(sap_ba_NatCan, na.rm = T)/
+                            sum(!is.na(sap_ba_tot)), #denom is count of plots
+                          sap_ba_pct_NatOth = sum(sap_ba_NatOth, na.rm = T)/
+                            sum(!is.na(sap_ba_tot)),
+                          sap_ba_pct_Exotic = sum(sap_ba_Exotic, na.rm = T)/
+                            sum(!is.na(sap_ba_tot)),
+                          sap_dens_pct_NatCan = sum(sap_dens_NatCan, na.rm = T)/
+                            sum(!is.na(sap_dens_tot)),
+                          sap_dens_pct_NatOth = sum(sap_dens_NatOth, na.rm = T)/
+                            sum(!is.na(sap_dens_tot)),
+                          sap_dens_pct_Exotic = sum(sap_dens_Exotic, na.rm = T)/
+                            sum(!is.na(sap_dens_tot)),
+                          seed_dens_pct_NatCan = sum(seed_dens_NatCan, na.rm = T)/
+                            sum(!is.na(seed_dens_tot)),
+                          seed_dens_pct_NatOth = sum(seed_dens_NatOth, na.rm = T)/
+                            sum(!is.na(seed_dens_tot)),
+                          seed_dens_pct_Exotic = sum(seed_dens_Exotic, na.rm = T)/
+                            sum(!is.na(seed_dens_tot)),
+                          sap_ba_check = sap_ba_pct_NatCan + sap_ba_pct_NatOth + sap_ba_pct_Exotic,
+                          sap_dens_check = sap_dens_pct_NatCan + sap_dens_pct_NatOth + sap_dens_pct_Exotic,
+                          seed_dens_check = seed_dens_pct_NatCan + seed_dens_pct_NatOth + seed_dens_pct_Exotic,
+                          )
 
 write.csv(comp_park, paste0(data, "./data/EFWG_proportion_regen_20220325.csv"), row.names = F)
