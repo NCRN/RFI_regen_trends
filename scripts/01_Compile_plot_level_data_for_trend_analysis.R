@@ -2156,7 +2156,7 @@ length(unique(reg_final$Plot_Name)) #1515
 write.csv(reg_final, paste0(datapath, "EFWG_full_dataset_20220325.csv"), row.names = FALSE) 
 
 #------- Composition Proportion Data Compile --------
-reg_final <- read.csv(paste0("./data/EFWG_full_dataset_20220325.csv"))
+#reg_final <- read.csv(paste0("./data/EFWG_full_dataset_20220325.csv"))
 names(reg_final)
 comp_data <- reg_final %>% select(Plot_Name, Network, Unit_Code, Year, cycle, lat_rank, excludeEvent,
                                   Sap_BA_NatCan, Sap_BA_NatOth, Sap_BA_Exotic,
