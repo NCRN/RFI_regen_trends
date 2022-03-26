@@ -71,8 +71,3 @@ lapply(seq_along(columns), function(x){
 }
 )
 
-<<<<<<< HEAD
-=======
-check_data(df_comb, "Tree_BA_Total", returndf = T)
-check_data(df_comb, "excludeEvent", returndf = T)
->>>>>>> f69b9d9f7f9f3fe572bb3e351377eda1e9528c6b
