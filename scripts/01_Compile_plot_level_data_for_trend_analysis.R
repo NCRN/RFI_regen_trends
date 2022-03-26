@@ -2230,4 +2230,4 @@ comp_park2 <- comp_data_c3 %>% #group_by(Network, Unit_Code %>%
                           seed_dens_check = seed_dens_pct_NatCan + seed_dens_pct_NatOth + seed_dens_pct_Exotic,
                           )
 
-write.csv(comp_park, paste0(data, "./data/EFWG_proportion_regen_20220325.csv"), row.names = F)
+write.csv(comp_park, "./data/EFWG_proportion_regen_20220325.csv", row.names = F)

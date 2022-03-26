@@ -738,5 +738,52 @@ plot_check
 
 write.csv(reg_final, paste0(datapath, "EFWG_species_dataset_20220325.csv"), row.names = FALSE)
 
+#------- Composition Proportion Data Compile --------
+#reg_final <- read.csv(paste0("./data/EFWG_species_dataset_20220325.csv"))
+tss <- read.csv("./data/EFWG_full_dataset_20220325.csv") %>% 
+  select(Plot_Name, Network, Unit_Code, Year, cycle, Sap_BA_Total, Sap_Dens_Total, Seed_Dens_Total)
+head(tss)
+head(reg_final)
+comp_data <- reg_final %>% select(Plot_Name, Network, Unit_Code, Year, cycle, lat_rank, excludeEvent,
+                                  Sap_BA_FRAX, Sap_BA_FAGGRA, Sap_BA_TSUCAN, Sap_BA_ASITRI, 
+                                  Sap_Dens_FRAX, Sap_Dens_FAGGRA, Sap_Dens_TSUCAN, Sap_Dens_ASITRI, 
+                                  Seed_Dens_FRAX, Seed_Dens_FAGGRA, Seed_Dens_TSUCAN, Seed_Dens_ASITRI) %>% 
+                           left_join(tss, ., by = c("Plot_Name", "Network", "Unit_Code", "Year",
+                                                    "cycle"))
+
+comp_data_c3 <- comp_data %>% filter(cycle == 3 & excludeEvent == 0) 
+table(complete.cases(comp_data_c3)) #4 F
+comp_data_c3[!complete.cases(comp_data_c3),]
+
+# DEWA-159-2017 NA Seedling and Sapling Data (Converted to 0)
+# CATO-0331-2018 NA Seedling Data (Converted to 0)
+# CHOH-0015-2017 NA Seedling Data (Converted to 0)
+# NACE-0493-2017 NA Seedling Data (Converted to 0)
+names(comp_data_c3)
+
+comp_data_c3[, 5:22][is.na(comp_data_c3[,5:22])] <- 0
+
+# This approach adds to 1- weights each stem equally, vs. 2nd process weights each plot equally.
+comp_park <- comp_data_c3 %>% group_by(Network, Unit_Code) %>% 
+  summarize(sap_ba_tot = sum(Sap_BA_Total),
+            sap_dens_tot = sum(Sap_Dens_Total),
+            seed_dens_tot = sum(Seed_Dens_Total),
+            sap_ba_pct_FRAX = sum(Sap_BA_FRAX)/sap_ba_tot,
+            sap_ba_pct_FAGGRA = sum(Sap_BA_FAGGRA)/sap_ba_tot,
+            sap_ba_pct_ASITRI = sum(Sap_BA_ASITRI)/sap_ba_tot,
+            sap_dens_pct_FRAX = sum(Sap_Dens_FRAX)/sap_dens_tot,
+            sap_dens_pct_FAGGRA = sum(Sap_Dens_FAGGRA)/sap_dens_tot,
+            sap_dens_pct_ASITRI = sum(Sap_Dens_ASITRI)/sap_dens_tot,
+            seed_dens_pct_FRAX = sum(Seed_Dens_FRAX)/seed_dens_tot,
+            seed_dens_pct_FAGGRA = sum(Seed_Dens_FAGGRA)/seed_dens_tot,
+            seed_dens_pct_ASITRI = sum(Seed_Dens_ASITRI)/seed_dens_tot)
+
+
+comp_park <- comp_park %>% mutate(sap_ba_check = sap_ba_pct_FRAX + sap_ba_pct_FAGGRA + sap_ba_pct_ASITRI,
+                                  sap_dens_check = sap_dens_pct_FRAX + sap_dens_pct_FAGGRA + sap_dens_pct_ASITRI,
+                                  seed_dens_check = seed_dens_pct_FRAX + seed_dens_pct_FAGGRA + seed_dens_pct_ASITRI)
+
+
+write.csv(comp_park, "./data/EFWG_proportion_regen_species_20220325.csv", row.names = F)
 
 
