@@ -6,9 +6,8 @@ library(tidyverse)
 
 options("scipen" = 100, "digits" = 4) # keeps scientific notation from showing up
 
-datapath <- "./data/"
-dens_df1 <- read.csv(paste0(datapath, "EFWG_full_dataset_20220325.csv")) %>% select(-contains("Native"))
-veggrp <- read.csv(paste0(datapath, "EFWG_veggroups.csv"))
+dens_df1 <- read.csv("./data/EFWG_full_dataset_20220325.csv") %>% select(-contains("Native"))
+veggrp <- read.csv("./data/EFWG_veggroups.csv")
 names(veggrp)
 
 dens_df <- right_join(veggrp %>% select(Plot_Name, MACROGROUP_NAME, MACROGROUP_KEY, GROUP_NAME, GROUP_KEY),
@@ -63,7 +62,7 @@ macrogrp_met_list <- data.frame(expand.grid(macrogrps, metrics)) %>%
 dens_grp <- dens_df %>% filter(MACROGROUP_NAME %in% macrogrps)
 
 # works when sample = T, but not sample = F
-boot_results_mg <- map2_df(macrogrp_met_list[,1], macrogrp_met_list[,2],
+boot_results_mg <- map2_dfr(macrogrp_met_list[,1], macrogrp_met_list[,2],
                            function(mgrp, y){case_boot_lmer(df = dens_grp %>% filter(MACROGROUP_NAME == mgrp),
                                                             x = "cycle", y = y, ID = "Plot_Name",
                                                             group = "MACROGROUP_NAME",
@@ -73,6 +72,5 @@ boot_results_mg <- map2_df(macrogrp_met_list[,1], macrogrp_met_list[,2],
                                                             num_reps = 1000, chatty = TRUE) %>%
                    mutate(Macrogroup = paste(mgrp), resp = paste(y))})
 
-#write.csv(boot_results_mg, paste0(datapath, "/results/intercept_lat_net/all_metrics_randint_macrogroup_20211102.csv"), row.names = F)
-write.csv(boot_results_mg, "Output/tabular/all_metrics_randint_macrogroup_20220325.csv", row.names = F)
+write.csv(boot_results_mg, "./results/20220325/all_metrics_randint_macrogroup_20220325.csv", row.names = F)
 
