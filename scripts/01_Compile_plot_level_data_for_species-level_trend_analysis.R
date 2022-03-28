@@ -12,9 +12,7 @@ library(vegan)
 
 options(scipen = 100)
 
-#datapath <- "D:/NETN/R_Dev/NPSForVeg_Data/" #Local dir for Kate
-datapath <- "Data/" #Relative path
-
+datapath <- "./data/"
 
 ncrn <- importNCRN(paste0(datapath,"NCRN_data"))
 ermn <- importERMN(paste0(datapath, "ERMN_data"))                   
@@ -24,6 +22,7 @@ netn <- importNETN(paste0(datapath, "NETN_data"))
 plot_visit_lj <- read.csv(paste0(datapath, "EFWG_plot_visit_left_join.csv")) %>% select(-DBI) %>% unique()
 
 spp_list <- read.csv(paste0(datapath, "NPS_tree_species_groups.csv")) # Demoted Fraxinus to not canopy tree
+head(spp_list) #contains New column, so it's the latest
 
 # Functions to streamline compiling
 
@@ -739,32 +738,104 @@ plot_check
 write.csv(reg_final, paste0(datapath, "EFWG_species_dataset_20220325.csv"), row.names = FALSE)
 
 #------- Composition Proportion Data Compile --------
-#reg_final <- read.csv(paste0("./data/EFWG_species_dataset_20220325.csv"))
+
+# First need to compile the macrogroup data
+dens_df1 <- read.csv("./data/EFWG_full_dataset_20220325.csv")
+veggrp <- read.csv("./data/EFWG_veggroups.csv")
+
+dens_df <- right_join(veggrp %>% select(Plot_Name, MACROGROUP_NAME, MACROGROUP_KEY, GROUP_NAME, GROUP_KEY),
+                      dens_df1 %>% select(-lat_rank), by = "Plot_Name") %>% 
+  mutate(mg_short = 
+           case_when(
+             grepl("Appalachian-Northeastern Oak", .data$MACROGROUP_NAME) ~ "Northern Oak - Pine",
+             grepl("Eastern North American Ruderal Forest", .data$MACROGROUP_NAME) ~ "Northern Ruderal",
+             grepl("Laurentian-Acadian Mesic Hardwood - Conifer", .data$MACROGROUP_NAME) ~ "Acadian Mixed",
+             grepl("Appalachian-Interior-Northeastern", .data$MACROGROUP_NAME) ~ "Appalachian Mesic",
+             grepl("North Atlantic Coastal", .data$MACROGROUP_NAME) ~ "Coastal Plain",
+             grepl("Southeastern North American Ruderal Forest", .data$MACROGROUP_NAME) ~ "Southern Ruderal",       
+             grepl("Central Hardwood Floodplain", .data$MACROGROUP_NAME) ~ "Floodplain", 
+             grepl("Southern & South", .data$MACROGROUP_NAME) ~ "Southern Oak - Pine",
+             TRUE ~ "Not Assigned")) %>% 
+  filter(!mg_short %in% "Not Assigned")
+
+table(dens_df$MACROGROUP_NAME, dens_df$mg_short)
+
+# Only include macrogroups with at least 50 plots
+macrogrps <- dens_df %>% filter(cycle == 3) %>%
+  group_by(mg_short) %>% summarize(num_plots = sum(!is.na(Plot_Name))) %>%
+  filter(num_plots >= 50) %>% select(mg_short) 
+
+macrogrp_list <- sort(unique(macrogrps$mg_short))
+
+macrogrp_list
+
+dens_grp <- dens_df %>% filter(mg_short %in% macrogrp_list)
+head(dens_grp)
+
+# Need to add lat/long for each plot, so I can figure out latitude rank for the macrogroups
+import_data <- function(network, data){
+  dat <- read.csv(paste0("./data/", network, "_data/", data, ".csv")) %>% 
+    select(Plot_Name, Latitude, Longitude) %>% unique()
+  
+}
+
+plots <- rbind(import_data("ERMN", "Plots"),
+               import_data("MIDN", "Plots"),
+               import_data("NCRN", "Plots"),
+               import_data("NETN", "Plots"))
+
+table(complete.cases(plots$Latitude)) #all true
+
+dens_grp <- left_join(dens_grp, plots, by = c("Plot_Name"))
+names(dens_grp)
+
+table(complete.cases(dens_grp$Latitude)) #all true
+
+mg_mean_lat <- dens_grp %>% group_by(mg_short, MACROGROUP_NAME) %>% 
+  summarize(mean_lat = mean(Latitude))
+
+mg_mean_lat$lat_rank <- rank(mg_mean_lat$mean_lat) 
+
+dens_df <- left_join(dens_grp, mg_mean_lat %>% select(-mean_lat), by = c("mg_short", "MACROGROUP_NAME"))
+
+# Set up data for cycle 3
+dens_c3 <- dens_df %>% filter(cycle == 3) 
+
+names(dens_c3)
+
+macro_plots <- dens_c3 %>% select(Plot_Name, MACROGROUP_NAME, mg_short, lat_rank) %>% unique()
+write.csv(macro_plots, "./data/EFWG_macrogroup_plot_lat_rank.csv", row.names = F)
+
+# Now to work with species data
+reg_final <- read.csv(paste0("./data/EFWG_species_dataset_20220325.csv"))
 tss <- read.csv("./data/EFWG_full_dataset_20220325.csv") %>% 
   select(Plot_Name, Network, Unit_Code, Year, cycle, Sap_BA_Total, Sap_Dens_Total, Seed_Dens_Total)
-head(tss)
-head(reg_final)
-comp_data <- reg_final %>% select(Plot_Name, Network, Unit_Code, Year, cycle, lat_rank, excludeEvent,
-                                  Sap_BA_FRAX, Sap_BA_FAGGRA, Sap_BA_TSUCAN, Sap_BA_ASITRI, 
-                                  Sap_Dens_FRAX, Sap_Dens_FAGGRA, Sap_Dens_TSUCAN, Sap_Dens_ASITRI, 
-                                  Seed_Dens_FRAX, Seed_Dens_FAGGRA, Seed_Dens_TSUCAN, Seed_Dens_ASITRI) %>% 
-                           left_join(tss, ., by = c("Plot_Name", "Network", "Unit_Code", "Year",
-                                                    "cycle"))
+
+comp_data1 <- reg_final %>% select(Plot_Name, Network, Unit_Code, Year, cycle, excludeEvent,
+                                   Sap_BA_FRAX, Sap_BA_FAGGRA, Sap_BA_TSUCAN, Sap_BA_ASITRI, 
+                                   Sap_Dens_FRAX, Sap_Dens_FAGGRA, Sap_Dens_TSUCAN, Sap_Dens_ASITRI, 
+                                   Seed_Dens_FRAX, Seed_Dens_FAGGRA, Seed_Dens_TSUCAN, Seed_Dens_ASITRI) %>% 
+                            left_join(tss, ., by = c("Plot_Name", "Network", "Unit_Code", "Year",
+                                                     "cycle"))
+head(comp_data1)
+head(macro_plots)
+
+comp_data <- left_join(macro_plots, comp_data1, by = "Plot_Name")
+head(comp_data)
 
 comp_data_c3 <- comp_data %>% filter(cycle == 3 & excludeEvent == 0) 
-table(complete.cases(comp_data_c3)) #4 F
-comp_data_c3[!complete.cases(comp_data_c3),]
 
-# DEWA-159-2017 NA Seedling and Sapling Data (Converted to 0)
+table(complete.cases(comp_data_c3)) #3 F
+comp_data_c3[!complete.cases(comp_data_c3),]
 # CATO-0331-2018 NA Seedling Data (Converted to 0)
 # CHOH-0015-2017 NA Seedling Data (Converted to 0)
 # NACE-0493-2017 NA Seedling Data (Converted to 0)
 names(comp_data_c3)
 
-comp_data_c3[, 5:22][is.na(comp_data_c3[,5:22])] <- 0
+comp_data_c3[, 9:24][is.na(comp_data_c3[,9:24])] <- 0
 
 # This approach adds to 1- weights each stem equally, vs. 2nd process weights each plot equally.
-comp_park <- comp_data_c3 %>% group_by(Network, Unit_Code) %>% 
+comp_park <- comp_data_c3 %>% group_by(mg_short, lat_rank) %>% 
   summarize(sap_ba_tot = sum(Sap_BA_Total),
             sap_dens_tot = sum(Sap_Dens_Total),
             seed_dens_tot = sum(Seed_Dens_Total),
@@ -784,6 +855,5 @@ comp_park <- comp_park %>% mutate(sap_ba_check = sap_ba_pct_FRAX + sap_ba_pct_FA
                                   seed_dens_check = seed_dens_pct_FRAX + seed_dens_pct_FAGGRA + seed_dens_pct_ASITRI)
 
 
-write.csv(comp_park, "./data/EFWG_proportion_regen_species_20220325.csv", row.names = F)
-
+write.csv(comp_park, "./data/EFWG_proportion_regen_species_20220325_mg.csv", row.names = F)
 

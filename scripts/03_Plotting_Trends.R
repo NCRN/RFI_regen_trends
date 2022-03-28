@@ -101,6 +101,7 @@ boot_results$strp_col <- case_when(boot_results$network == "ERMN" ~ "#A5BDCD",
 
 boot_results <- boot_results %>% rename(Network = network)
 table(boot_results$Network)
+head(boot_results)
 
 #----- Setting up colors to color code facets by network 
 # First matching networks to colors

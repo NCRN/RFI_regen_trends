@@ -12,8 +12,7 @@ library(vegan)
 
 options(scipen = 100)
 
-datapath <- "./data/" #Local dir for Kate
-#datapath <- "Data/" #Relative path
+datapath <- "./data/" 
 
 # 20211012: Update to NCRN stem data columns
 # ncrn_saps <- read.csv(paste0(datapath, "NCRN_data/Saplings.csv")) 
@@ -2071,25 +2070,6 @@ table(complete.cases(stock$stock_final))
 nrow(stock) - nrow(unique(stock[,c("Plot_Name", "Event_Year")])) #0
 table(stock$ParkCode, stock$Event_Year)
 
-# Quick check of park-level means & num plots for most recent cycle
-stock_4yr <- stock %>% filter(Event_Year >= 2016) %>% 
-  group_by(ParkCode, network) %>% 
-  summarize(stock_med = median(stock_final),
-            stock_se = sd(stock_final)/sqrt(n()),
-            .groups = "drop")
-
-ggplot(stock_4yr , aes(x = reorder(ParkCode, desc(stock_med)), y = stock_med, fill = network))+
-  geom_bar(stat = 'identity', col = "#8e8e8e")+ 
-    #BUG: No such package
-    #forestNETN::theme_FHM()+ 
-  geom_errorbar(aes(ymin = stock_med, ymax = stock_med + stock_se), col = "#8e8e8e")+
-  scale_fill_manual(values = c("#65A1CA", "#FFC25F", "#FFF85F", "#6CCA65"))+  
-  theme(axis.text.x = element_text(angle = 45, hjust = 1),
-        legend.title = element_blank())+
-  labs(y = "Median Stocking Index (2016 \U2013 2019)", x = "Park Unit")
-
-ggsave(paste0(datapath, "median_stocking_index.jpg"), width = 10, height = 8, units = "in")
-
 # Bring in plot visits with incomplete or excluded events
 plot_ev_lj <- read.csv(paste0(datapath, "EFWG_plot_visit_left_join.csv"))
 
@@ -2164,6 +2144,7 @@ comp_data <- reg_final %>% select(Plot_Name, Network, Unit_Code, Year, cycle, la
                                   Seed_Dens_NatCan, Seed_Dens_NatOth, Seed_Dens_Exotic)
 comp_data_c3 <- comp_data %>% filter(cycle == 3 & excludeEvent == 0) 
 table(complete.cases(comp_data_c3)) #4 F
+comp_data_c3[which(!complete.cases(comp_data_c3)),]
 # DEWA-159-2017 NA Seedling and Sapling Data (Converted to 0)
 # CATO-0331-2018 NA Seedling Data (Converted to 0)
 # CHOH-0015-2017 NA Seedling Data (Converted to 0)
@@ -2172,8 +2153,10 @@ names(comp_data_c3)
 
 comp_data_c3[, 8:16][is.na(comp_data_c3[,8:16])] <- 0
 
-# This approach adds to 1- weights each stem equally, vs. 2nd process weights each plot equally.
-comp_park <- comp_data_c3 %>% group_by(Network, Unit_Code) %>% 
+table(comp_data_c3$excludeEvent) #all 0
+
+# Calculate plot-level average, then average over all plots, then rescale to range between 0 & 1
+comp_plot <- comp_data_c3 %>% group_by(Plot_Name, Network, Unit_Code, lat_rank) %>% 
   summarize(sap_ba_tot = sum(Sap_BA_NatCan + Sap_BA_NatOth + Sap_BA_Exotic),
             sap_dens_tot = sum(Sap_Dens_NatCan + Sap_Dens_NatOth + Sap_Dens_Exotic),
             seed_dens_tot = sum(Seed_Dens_NatCan + Seed_Dens_NatOth + Seed_Dens_Exotic),
@@ -2185,49 +2168,130 @@ comp_park <- comp_data_c3 %>% group_by(Network, Unit_Code) %>%
             sap_dens_pct_Exotic = sum(Sap_Dens_Exotic)/sap_dens_tot,
             seed_dens_pct_NatCan = sum(Seed_Dens_NatCan)/seed_dens_tot,
             seed_dens_pct_NatOth = sum(Seed_Dens_NatOth)/seed_dens_tot,
-            seed_dens_pct_Exotic = sum(Seed_Dens_Exotic)/seed_dens_tot)
+            seed_dens_pct_Exotic = sum(Seed_Dens_Exotic)/seed_dens_tot, 
+            .groups = "drop") %>% data.frame()
 
-
-comp_park <- comp_park %>% mutate(sap_ba_check = sap_ba_pct_NatCan + sap_ba_pct_NatOth + sap_ba_pct_Exotic,
+comp_plot <- comp_plot %>% mutate(sap_ba_check = sap_ba_pct_NatCan + sap_ba_pct_NatOth + sap_ba_pct_Exotic,
                                   sap_dens_check = sap_dens_pct_NatCan + sap_dens_pct_NatOth + sap_dens_pct_Exotic,
                                   seed_dens_check = seed_dens_pct_NatCan + seed_dens_pct_NatOth + seed_dens_pct_Exotic)
 
-# The process below doesn't add to 1
-comp_park2 <- comp_data_c3 %>% #group_by(Network, Unit_Code %>% 
-                mutate(sap_ba_tot = Sap_BA_NatCan + Sap_BA_NatOth + Sap_BA_Exotic,
-                       sap_dens_tot = Sap_Dens_NatCan + Sap_Dens_NatOth + Sap_Dens_Exotic,
-                       seed_dens_tot = Seed_Dens_NatCan + Seed_Dens_NatOth + Seed_Dens_Exotic,
-                       sap_ba_NatCan = Sap_BA_NatCan/sap_ba_tot,
-                       sap_ba_NatOth = Sap_BA_NatOth/sap_ba_tot,
-                       sap_ba_Exotic = Sap_BA_Exotic/sap_ba_tot,
-                       sap_dens_NatCan = Sap_Dens_NatCan/sap_dens_tot,
-                       sap_dens_NatOth = Sap_Dens_NatOth/sap_dens_tot,
-                       sap_dens_Exotic = Sap_Dens_Exotic/sap_dens_tot,
-                       seed_dens_NatCan = Seed_Dens_NatCan/seed_dens_tot,
-                       seed_dens_NatOth = Seed_Dens_NatOth/seed_dens_tot,
-                       seed_dens_Exotic = Seed_Dens_Exotic/seed_dens_tot) %>% 
-                group_by(Network, Unit_Code) %>% 
-                summarize(sap_ba_pct_NatCan = sum(sap_ba_NatCan, na.rm = T)/
-                            sum(!is.na(sap_ba_tot)), #denom is count of plots
-                          sap_ba_pct_NatOth = sum(sap_ba_NatOth, na.rm = T)/
-                            sum(!is.na(sap_ba_tot)),
-                          sap_ba_pct_Exotic = sum(sap_ba_Exotic, na.rm = T)/
-                            sum(!is.na(sap_ba_tot)),
-                          sap_dens_pct_NatCan = sum(sap_dens_NatCan, na.rm = T)/
-                            sum(!is.na(sap_dens_tot)),
-                          sap_dens_pct_NatOth = sum(sap_dens_NatOth, na.rm = T)/
-                            sum(!is.na(sap_dens_tot)),
-                          sap_dens_pct_Exotic = sum(sap_dens_Exotic, na.rm = T)/
-                            sum(!is.na(sap_dens_tot)),
-                          seed_dens_pct_NatCan = sum(seed_dens_NatCan, na.rm = T)/
-                            sum(!is.na(seed_dens_tot)),
-                          seed_dens_pct_NatOth = sum(seed_dens_NatOth, na.rm = T)/
-                            sum(!is.na(seed_dens_tot)),
-                          seed_dens_pct_Exotic = sum(seed_dens_Exotic, na.rm = T)/
-                            sum(!is.na(seed_dens_tot)),
-                          sap_ba_check = sap_ba_pct_NatCan + sap_ba_pct_NatOth + sap_ba_pct_Exotic,
-                          sap_dens_check = sap_dens_pct_NatCan + sap_dens_pct_NatOth + sap_dens_pct_Exotic,
-                          seed_dens_check = seed_dens_pct_NatCan + seed_dens_pct_NatOth + seed_dens_pct_Exotic,
-                          )
+comp_plot[, 5:19][is.na(comp_plot[, 5:19])] <- 0
+names(comp_plot) #all plots with seedlings or saplings sum to 1
 
-write.csv(comp_park, "./data/EFWG_proportion_regen_20220325.csv", row.names = F)
+# Average composition at park level
+comp_park <- comp_plot %>% group_by(Network, Unit_Code, lat_rank) %>% 
+                           summarize(sap_ba_pct_NatCan = mean(sap_ba_pct_NatCan),
+                                     sap_ba_pct_NatOth = mean(sap_ba_pct_NatOth),
+                                     sap_ba_pct_Exotic = mean(sap_ba_pct_Exotic),
+                                     sap_dens_pct_NatCan = mean(sap_dens_pct_NatCan),
+                                     sap_dens_pct_NatOth = mean(sap_dens_pct_NatOth),
+                                     sap_dens_pct_Exotic = mean(sap_dens_pct_Exotic),
+                                     seed_dens_pct_NatCan = mean(seed_dens_pct_NatCan),
+                                     seed_dens_pct_NatOth = mean(seed_dens_pct_NatOth),
+                                     seed_dens_pct_Exotic = mean(seed_dens_pct_Exotic),
+                                     .groups = 'drop') %>% data.frame()
+
+# Rescale to range from 0 to 1
+comp_park_rel <- comp_park %>% 
+  mutate(sap_ba_tot = sap_ba_pct_NatCan + sap_ba_pct_NatOth + sap_ba_pct_Exotic,
+         sap_dens_tot = sap_dens_pct_NatCan + sap_dens_pct_NatOth + sap_dens_pct_Exotic,
+         seed_dens_tot = seed_dens_pct_NatCan + seed_dens_pct_NatOth + seed_dens_pct_Exotic,
+         sap_ba_pct_NatCan_rel = sap_ba_pct_NatCan/sap_ba_tot,
+         sap_ba_pct_NatOth_rel = sap_ba_pct_NatOth/sap_ba_tot,
+         sap_ba_pct_Exotic_rel = sap_ba_pct_Exotic/sap_ba_tot,
+         sap_dens_pct_NatCan_rel = sap_dens_pct_NatCan/sap_dens_tot,
+         sap_dens_pct_NatOth_rel = sap_dens_pct_NatOth/sap_dens_tot,
+         sap_dens_pct_Exotic_rel = sap_dens_pct_Exotic/sap_dens_tot,
+         seed_dens_pct_NatCan_rel = seed_dens_pct_NatCan/seed_dens_tot,
+         seed_dens_pct_NatOth_rel = seed_dens_pct_NatOth/seed_dens_tot,
+         seed_dens_pct_Exotic_rel = seed_dens_pct_Exotic/seed_dens_tot,
+         sap_ba_check = sap_ba_pct_NatCan_rel + sap_ba_pct_NatOth_rel + sap_ba_pct_Exotic_rel,
+         sap_dens_check = sap_dens_pct_NatCan_rel + sap_dens_pct_NatOth_rel + sap_dens_pct_Exotic_rel,
+         seed_dens_check = seed_dens_pct_NatCan_rel + seed_dens_pct_NatOth_rel + seed_dens_pct_Exotic_rel)
+
+
+write.csv(comp_park_rel, "./data/EFWG_proportion_regen_20220325.csv", row.names = F)
+head(comp_park_rel)
+
+#----- Composition Proportion Macrogroup ----
+dens_df1 <- read.csv("./data/EFWG_full_dataset_20220325.csv") %>% select(-lat_rank)
+mg_df <- read.csv("./data/EFWG_macrogroup_plot_lat_rank.csv")
+dens_df <- left_join(mg_df, dens_df1, by = "Plot_Name")
+head(dens_df)
+
+comp_data <- dens_df %>% select(Plot_Name, mg_short, Year, cycle, lat_rank, excludeEvent,
+                                Sap_BA_NatCan, Sap_BA_NatOth, Sap_BA_Exotic,
+                                Sap_Dens_NatCan, Sap_Dens_NatOth, Sap_Dens_Exotic,
+                                Seed_Dens_NatCan, Seed_Dens_NatOth, Seed_Dens_Exotic)
+
+comp_data_c3 <- comp_data %>% filter(cycle == 3 & excludeEvent == 0) 
+table(complete.cases(comp_data_c3)) #3 F
+comp_data_c3[which(!complete.cases(comp_data_c3)),]
+# CATO-0331-2018 NA Seedling Data (Converted to 0)
+# CHOH-0015-2017 NA Seedling Data (Converted to 0)
+# NACE-0493-2017 NA Seedling Data (Converted to 0)
+names(comp_data_c3)
+
+comp_data_c3[, 7:15][is.na(comp_data_c3[, 7:15])] <- 0
+
+table(comp_data_c3$excludeEvent) #all 0
+
+# Calculate plot-level average, then average over all plots, then rescale to range between 0 & 1
+comp_plot <- comp_data_c3 %>% group_by(Plot_Name, mg_short, lat_rank) %>% 
+  summarize(sap_ba_tot = sum(Sap_BA_NatCan + Sap_BA_NatOth + Sap_BA_Exotic),
+            sap_dens_tot = sum(Sap_Dens_NatCan + Sap_Dens_NatOth + Sap_Dens_Exotic),
+            seed_dens_tot = sum(Seed_Dens_NatCan + Seed_Dens_NatOth + Seed_Dens_Exotic),
+            sap_ba_pct_NatCan = sum(Sap_BA_NatCan)/sap_ba_tot,
+            sap_ba_pct_NatOth = sum(Sap_BA_NatOth)/sap_ba_tot,
+            sap_ba_pct_Exotic = sum(Sap_BA_Exotic)/sap_ba_tot,
+            sap_dens_pct_NatCan = sum(Sap_Dens_NatCan)/sap_dens_tot,
+            sap_dens_pct_NatOth = sum(Sap_Dens_NatOth)/sap_dens_tot,
+            sap_dens_pct_Exotic = sum(Sap_Dens_Exotic)/sap_dens_tot,
+            seed_dens_pct_NatCan = sum(Seed_Dens_NatCan)/seed_dens_tot,
+            seed_dens_pct_NatOth = sum(Seed_Dens_NatOth)/seed_dens_tot,
+            seed_dens_pct_Exotic = sum(Seed_Dens_Exotic)/seed_dens_tot, 
+            .groups = "drop") %>% data.frame()
+
+comp_plot <- comp_plot %>% mutate(sap_ba_check = sap_ba_pct_NatCan + sap_ba_pct_NatOth + sap_ba_pct_Exotic,
+                                  sap_dens_check = sap_dens_pct_NatCan + sap_dens_pct_NatOth + sap_dens_pct_Exotic,
+                                  seed_dens_check = seed_dens_pct_NatCan + seed_dens_pct_NatOth + seed_dens_pct_Exotic)
+
+comp_plot[, 4:18][is.na(comp_plot[, 4:18])] <- 0
+names(comp_plot) #all plots with seedlings or saplings sum to 1
+
+# Average composition at park level
+comp_mg <- comp_plot %>% group_by(mg_short, lat_rank) %>% 
+  summarize(sap_ba_pct_NatCan = mean(sap_ba_pct_NatCan),
+            sap_ba_pct_NatOth = mean(sap_ba_pct_NatOth),
+            sap_ba_pct_Exotic = mean(sap_ba_pct_Exotic),
+            sap_dens_pct_NatCan = mean(sap_dens_pct_NatCan),
+            sap_dens_pct_NatOth = mean(sap_dens_pct_NatOth),
+            sap_dens_pct_Exotic = mean(sap_dens_pct_Exotic),
+            seed_dens_pct_NatCan = mean(seed_dens_pct_NatCan),
+            seed_dens_pct_NatOth = mean(seed_dens_pct_NatOth),
+            seed_dens_pct_Exotic = mean(seed_dens_pct_Exotic),
+            .groups = 'drop') %>% data.frame()
+
+# Rescale to range from 0 to 1
+comp_mg_rel <- comp_mg %>% 
+  mutate(sap_ba_tot = sap_ba_pct_NatCan + sap_ba_pct_NatOth + sap_ba_pct_Exotic,
+         sap_dens_tot = sap_dens_pct_NatCan + sap_dens_pct_NatOth + sap_dens_pct_Exotic,
+         seed_dens_tot = seed_dens_pct_NatCan + seed_dens_pct_NatOth + seed_dens_pct_Exotic,
+         sap_ba_pct_NatCan_rel = sap_ba_pct_NatCan/sap_ba_tot,
+         sap_ba_pct_NatOth_rel = sap_ba_pct_NatOth/sap_ba_tot,
+         sap_ba_pct_Exotic_rel = sap_ba_pct_Exotic/sap_ba_tot,
+         sap_dens_pct_NatCan_rel = sap_dens_pct_NatCan/sap_dens_tot,
+         sap_dens_pct_NatOth_rel = sap_dens_pct_NatOth/sap_dens_tot,
+         sap_dens_pct_Exotic_rel = sap_dens_pct_Exotic/sap_dens_tot,
+         seed_dens_pct_NatCan_rel = seed_dens_pct_NatCan/seed_dens_tot,
+         seed_dens_pct_NatOth_rel = seed_dens_pct_NatOth/seed_dens_tot,
+         seed_dens_pct_Exotic_rel = seed_dens_pct_Exotic/seed_dens_tot,
+         sap_ba_check = sap_ba_pct_NatCan_rel + sap_ba_pct_NatOth_rel + sap_ba_pct_Exotic_rel,
+         sap_dens_check = sap_dens_pct_NatCan_rel + sap_dens_pct_NatOth_rel + sap_dens_pct_Exotic_rel,
+         seed_dens_check = seed_dens_pct_NatCan_rel + seed_dens_pct_NatOth_rel + seed_dens_pct_Exotic_rel)
+
+write.csv(comp_mg_rel, "./data/EFWG_proportion_regen_20220325_mg.csv", row.names = F)
+head(comp_mg_rel)
+
+
+

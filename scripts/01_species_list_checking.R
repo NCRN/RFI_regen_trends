@@ -3,11 +3,6 @@
 # Code written by Kate Miller on 3/25/22
 #-------------------------
 library(tidyverse)
-list.files('./data/NCRN_data')
-
-
-network = "NCRN"
-data = "Trees"
 
 import_data <- function(network, data){
   dat <- read.csv(paste0("./data/", network, "_data/", data, ".csv")) 
