@@ -11,7 +11,6 @@ library(stringr) #for word()
 
 options("scipen" = 100, "digits" = 4) # keeps scientific notation from showing up
 
-list.files(datapath)
 datapath <- "./data/"
 dens_df1 <- read.csv(paste0(datapath, "EFWG_full_dataset_20220325.csv")) %>% select(-lat_rank)
 spp_df <- read.csv(paste0(datapath, "EFWG_species_dataset_20220325.csv")) %>% select(-lat_rank)
@@ -111,18 +110,18 @@ table(boot_results$mg_short)
 
 #----- Setting up colors to color code facets by network 
 # First matching networks to colors
-mg_cols <- #rbind(#data.frame(mg_ord = "BLNK", strp_col = "white"), # place holder for BR blank in facet
-            data.frame(unique(data.frame(mg_ord = boot_results$mg_ord,
-                                         strp_col = boot_results$strp_col))) %>% arrange(desc(mg_ord))
+# mg_cols <- #rbind(#data.frame(mg_ord = "BLNK", strp_col = "white"), # place holder for BR blank in facet
+#             data.frame(unique(data.frame(mg_ord = boot_results$mg_ord,
+#                                          strp_col = boot_results$strp_col))) %>% arrange(desc(mg_ord))
 
 
-mg_cols
-
-mg_cols <- mg_cols %>% mutate(facet_ord = c(rev(42:45), rev(46:49))) %>%
-  arrange(facet_ord)
-
-fills <- c(mg_cols$strp_col) # for last strip that's blank b/c 39 not 40 parks
-fills
+# mg_cols
+# 
+# mg_cols <- mg_cols %>% mutate(facet_ord = c(rev(42:45), rev(46:49))) %>%
+#   arrange(facet_ord)
+# 
+# # fills <- c(mg_cols$strp_col) # for last strip that's blank b/c 39 not 40 parks
+# # fills
 
 # Fake plots to customize the network legend
 # leg_net <- ggplot(data = data.frame(network = c("ERMN", "MIDN", "NCBN", "NCRN", "NETN"),
@@ -303,12 +302,12 @@ plot_trends_by_grp <- function(df, xlab, ylab, group, var, facet_scales = 'fixed
   df_sign <- df1 %>% filter(term == "Slope") %>% 
     mutate(sign = case_when(lower95 > 0 | upper95 < 0 ~ "sign",
                             is.na(lower95) ~ "notmod",
-                            TRUE ~ "nonsign")) %>% select(park, !!group_sym, metric, sign)
+                            TRUE ~ "nonsign")) %>% select(mg_short, !!group_sym, metric, sign)
   
   df2 <- 
     left_join(df1 %>% filter(!term %in% c("Slope", "Intercept")), 
               df_sign, 
-              by = c("park", group, "metric")) %>%
+              by = c("mg_short", group, "metric")) %>%
     filter(!term %in% c("Intercept", "Slope"))
   
   # hacky way to plot groups that didn't get modeled and so don't have errorbars or ribbons
@@ -317,7 +316,7 @@ plot_trends_by_grp <- function(df, xlab, ylab, group, var, facet_scales = 'fixed
   
   p <- 
     ggplot(df2, aes(x = time, y = estimate))+ 
-    facet_wrap(~park_ord, scales = facet_scales, ncol = 8)+
+    facet_wrap(~mg_ord, scales = facet_scales, ncol = 4)+
     geom_point(aes(color = factor(!!group_sym), shape = !!group_sym, fill = !!group_sym), 
                size = 2, na.rm = TRUE)+
     geom_errorbar(aes(ymin = lower95, ymax = upper95, x = time,
@@ -351,8 +350,7 @@ boot_sppgrp$sppgrp <- gsub("^.*_", "", boot_sppgrp$resp)
 sppgrp_list <- c(paste0("_", unique(boot_sppgrp$sppgrp), collapse = "|"))
 boot_sppgrp$metric <- gsub(sppgrp_list, "", boot_sppgrp$resp)
 
-boot_sppgrp_comb <- boot_sppgrp %>% filter(sppgrp %in% c("NatCan", "NatOth", "Exotic")) %>% arrange(park, resp, term)
-
+boot_sppgrp_comb <- boot_sppgrp %>% filter(sppgrp %in% c("NatCan", "NatOth", "Exotic")) %>% arrange(lat_rank, resp, term)
 boot_sppgrp_comb$mg_ord <- reorder(boot_sppgrp_comb$mg_short, desc(boot_sppgrp_comb$lat_rank))
 boot_sppgrp_comb$estimate[boot_sppgrp_comb$estimate == 0] <- NA
 boot_sppgrp_comb$lower95[is.na(boot_sppgrp_comb$estimate)] <- NA
@@ -374,32 +372,6 @@ metric_names <- c("Sapling BA (sq.m/ha)",
                   "Tree Dens. 40 cm+ (stems/ha)",
                   "Tree BA (sq.m/ha)", 
                   "Tree Density (stems/ha)")
-
-# Matching networks to colors for facet strips
-park_cols <- rbind(data.frame(park_ord = "BLNK", strp_col = "white"),
-                   unique(data.frame(park_ord = boot_sppgrp_comb$park_ord,
-                                     strp_col = boot_sppgrp_comb$strp_col)) %>% arrange(desc(park_ord))
-)
-
-park_cols <- park_cols %>% mutate(facet_ord = c(rev(202:209), rev(210:217), rev(218:225), 
-                                                rev(226:233), rev(234:241))) %>% 
-  arrange(facet_ord)
-
-fills <- c(park_cols$strp_col) 
-
-# Fake plot for network legend
-leg_net <- ggplot(data = data.frame(network = c("ERMN", "MIDN", "NCBN", "NCRN", "NETN"),
-                                    x = c(1, 2, 3, 4, 5)),
-                  aes(x = x, fill = network))+
-  geom_histogram()+
-  scale_fill_manual(values = c("#A5BDCD", "#E7CDA4", "#CFB9D9", "#E1E59B", "#AACCA7"), 
-                    name = "Network:")+ theme_bw()+
-  theme(legend.position = 'bottom', 
-        legend.title = element_text(size = 7), 
-        legend.text=element_text(size = 7),
-        #legend.background = element_blank()
-        legend.background = element_rect(color = "#B9B9B9", size = 0.25)
-  )
 
 # Fake plot for trend legend
 leg_line2 <- ggplot(data = data.frame(sign = c("notmod", "nonsign", "sign"),
@@ -446,12 +418,13 @@ leg_linesp <- ggplot(data = data.frame(spgrp = c("Exotic", "NatCan", "NatOth"),
         legend.background = element_rect(colour = "#B9B9B9", size = 0.25)
   )
 
-leg_gnet <- gtable_filter(ggplot_gtable(ggplot_build(leg_net)), "guide-box")
 leg_gline2 <- gtable_filter(ggplot_gtable(ggplot_build(leg_line2)), "guide-box")
 leg_glinesp <- gtable_filter(ggplot_gtable(ggplot_build(leg_linesp)), "guide-box")
 
 # match metric columns and titles
 met_df <- data.frame(metrics = metrics, metric_names)
+met_df
+#metric <- metrics[1]
 
 walk(metrics, function(metric){
   title = as.character(met_df$metric_names[met_df$metrics == metric])
@@ -464,23 +437,15 @@ walk(metrics, function(metric){
                           facet_scales = 'fixed')+
     scale_x_continuous(breaks = c(1, 2, 3), labels = c("1", "2", "3"))
   
-  g <- ggplot_gtable(ggplot_build(p))
-  strp_col <- which(grepl('strip-t', g$layout$name))
   
-  k <- 1
-  for (i in strp_col) {
-    g$grobs[[i]]$grobs[[1]]$children[[1]]$gp$fill <- fills[k]
-    k <- k+1
-  }
-  
-  svg(paste0("./results/20220325/spp_grp_plots/", metric, ".svg"), 
+  svg(paste0("./results/20220325/spp_grp_plots/", metric, "_mg.svg"), 
       height = 8, width = 11) 
   
-  grid.arrange(grobs = list(g, leg_glinesp, leg_gline2, leg_gnet),
+  grid.arrange(grobs = list(p, leg_glinesp, leg_gline2),
                heights = c(6.5, 0.5),
-               widths = c(0.55, 2.75, 3.125, 3.35, 0.25),
+               widths = c(1, 3.5, 0.01, 3.5, 1),
                layout_matrix = rbind(c(1, 1, 1, 1, 1),
-                                     c(NA, 2, 3, 4, NA)))
+                                     c(NA, 2, NA, 3, NA)))
   dev.off()
   cat(metric, "\n")  
 })
@@ -495,24 +460,15 @@ walk(metrics, function(metric){
                           group = "sppgrp", var = var, 
                           facet_scales = 'free_y')+
     scale_x_continuous(breaks = c(1, 2, 3), labels = c("1", "2", "3"))
-  
-  g <- ggplot_gtable(ggplot_build(p))
-  strp_col <- which(grepl('strip-t', g$layout$name))
-  
-  k <- 1
-  for (i in strp_col) {
-    g$grobs[[i]]$grobs[[1]]$children[[1]]$gp$fill <- fills[k]
-    k <- k+1
-  }
-  
-  svg(paste0("./results/20220325/spp_grp_plots/free_y/", metric, "_free_y.svg"), 
+
+  svg(paste0("./results/20220325/spp_grp_plots/free_y/", metric, "_free_y_mg.svg"), 
       height = 8, width = 11) 
   
-  grid.arrange(grobs = list(g, leg_glinesp, leg_gline2, leg_gnet),
+  grid.arrange(grobs = list(p, leg_glinesp, leg_gline2),
                heights = c(6.5, 0.5),
-               widths = c(0.55, 2.75, 3.125, 3.35, 0.25),
+               widths = c(1, 3.5, 0.01, 3.5, 1),
                layout_matrix = rbind(c(1, 1, 1, 1, 1),
-                                     c(NA, 2, 3, 4, NA)))
+                                     c(NA, 2, NA, 3, NA)))
   dev.off()
   cat(metric, "\n")  
 })
@@ -520,7 +476,7 @@ walk(metrics, function(metric){
 table(dens_df$DBI)
 #DBI_cols <- c("#05e689", "#efdf00", "#f94b24", "#a60808")
 
-dbi_sum <- dens_df %>% group_by(Unit_Code, Network, cycle, DBI) %>% 
+dbi_sum <- dens_df %>% group_by(mg_short, cycle, DBI) %>% 
   summarize(num_plots = sum(!is.na(DBI)), .groups = 'drop') %>% 
   pivot_wider(names_from = DBI, values_from = num_plots, 
               names_glue = "DBI_{.name}" ,values_fill = 0) %>% 
@@ -528,10 +484,11 @@ dbi_sum <- dens_df %>% group_by(Unit_Code, Network, cycle, DBI) %>%
   pivot_longer(cols = DBI_2:DBI_5, names_to = "DBI", values_to = "num_plots")
 
 head(dbi_sum)
+head(dens_df)
 
 dbi_bar <- 
   ggplot(dens_df, aes(x = cycle, y = DBI, fill = as.factor(DBI), color = as.factor(DBI)))+ 
-  facet_wrap(~park_ord, ncol = 8)+
+  facet_wrap(~mg_ord, ncol = 4)+
   geom_bar(position = 'fill', stat = 'identity', na.rm = TRUE)+
   scale_color_manual(values = c("#05e689", "#efdf00", "#f94b24", "#a60808"),
                      labels = c("Low", "Medium", "High", "Very High"), name = "Deer Browse Impact")+
@@ -563,52 +520,18 @@ dbi_leg <- ggplot(dens_df %>% filter(Unit_Code == "WEFA"), aes(x = cycle, y = DB
 
 leg_gdbi <- gtable_filter(ggplot_gtable(ggplot_build(dbi_leg)), "guide-box")
 
-g <- ggplot_gtable(ggplot_build(dbi_bar))
-strp_col <- which(grepl('strip-t', g$layout$name))
-
-k <- 1
-for (i in strp_col) {
-  g$grobs[[i]]$grobs[[1]]$children[[1]]$gp$fill <- fills[k]
-  k <- k+1
-}
-
-# Fake plot for network legend
-leg_net <- ggplot(data = data.frame(network = c("ERMN", "MIDN", "NCBN", "NCRN", "NETN"),
-                                    x = c(1, 2, 3, 4, 5)),
-                  aes(x = x, fill = network))+
-  geom_histogram()+
-  scale_fill_manual(values = c("#A5BDCD", "#E7CDA4", "#CFB9D9", "#E1E59B", "#AACCA7"), 
-                    name = "Network:")+ theme_bw()+
-  theme(legend.position = 'bottom', 
-        legend.title = element_text(size = 9), 
-        legend.text=element_text(size = 9),
-        #legend.background = element_blank()
-        legend.background = element_rect(color = "#B9B9B9", size = 0.25)
-  )
-leg_gnet <- gtable_filter(ggplot_gtable(ggplot_build(leg_net)), "guide-box")
-
-svg("./results/DBI_by_cycle.svg", 
-    height = 8, width = 11) 
-
-grid.arrange(grobs = list(g, leg_gdbi, leg_gnet),
-             heights = c(6.5, 0.5),
-             widths = c(1.3, 4.25, 4.05, 1),
-             layout_matrix = rbind(c(1, 1, 1, 1),
-                                   c(NA, 2, 3, NA)))
-dev.off()
-
-svg("./results/DBI_by_cycle_simp.svg", 
+svg("./results/DBI_by_cycle_mg.svg", 
     height = 8, width = 11) 
 
 grid.arrange(grobs = list(dbi_bar, leg_gdbi),
              heights = c(6.5, 0.5),
-             widths = c(1.3, 4.25, 1),
+             widths = c(0.5, 7, 0.5),
              layout_matrix = rbind(c(1, 1, 1),
                                    c(NA, 2, NA)))
+
 dev.off()
 
 head(boot_results)
-sort(unique(boot_results$resp))
 
 #----- RESULTS GRID -----
 
@@ -647,12 +570,12 @@ result_sum <- boot_results %>% filter(term == "Slope") %>%
                           is.na(lower95) ~ "notmod",
                           TRUE ~ "nonsign")) %>% 
   #select(park, park_ord, resp, estimate, sign, strp_col) %>% 
-  left_join(tile_metrics, ., by = "resp") %>% arrange(park_ord, order)
+  left_join(tile_metrics, ., by = "resp") %>% arrange(mg_ord, order)
 
-result_sum2 <- result_sum %>% group_by(park_ord) %>% 
+result_sum2 <- result_sum %>% group_by(mg_ord) %>% 
   mutate(num_sign_bad = sum(sign %in% c("signdec_bad", "signinc_bad"))) %>% ungroup()
 
-result_sum2$num_sign_bad[result_sum2$park %in% c("SAHI", "WOTR")] <- -1
+#result_sum2$num_sign_bad[result_sum2$park %in% c("SAHI", "WOTR")] <- -1
 #result_sum2$label_order <- reorder(result_sum2$labels, desc(result_sum2$order))
 #result_sum2$park_order <- reorder(result_sum2$park, desc(result_sum2$num_sign_bad))
 result_sum2 <- result_sum2 %>% mutate(metgrp = factor(case_when(grepl("Total", resp) ~ "Total",
@@ -663,7 +586,7 @@ result_sum2 <- result_sum2 %>% mutate(metgrp = factor(case_when(grepl("Total", r
                                                                 TRUE ~ "Unk"),
                                                       levels = c("Total", "Native Canopy", "Other Native",
                                                                  "Exotic", "Similarity")
-)) %>% select(park, order, labels, metgrp, sign)
+)) %>% select(mg_short, order, labels, metgrp, sign)
 head(result_sum2)
 # decided to drop similarity trends because more confusing than helpful
 result_sum3 <- result_sum2 %>% filter(metgrp != "Similarity") %>% droplevels()
@@ -677,7 +600,7 @@ head(comp_natcan)
 #   pivot_wider(names_from = "Metric", values_from = "Mean") 
 
 status_metrics_3a <- dens_df %>% filter(cycle == 3) %>% 
-  group_by(Unit_Code) %>% 
+  group_by(mg_short) %>% 
   summarize(avg_sap_dens = mean(Sap_Dens_NatCan, na.rm = T), 
             avg_seed_dens = mean(Seed_Dens_NatCan, na.rm = T),
             avg_stock = mean(stock_final, na.rm = T),
@@ -703,12 +626,12 @@ status_metrics_3a <- dens_df %>% filter(cycle == 3) %>%
                                            between(avg_dbi, 3.01, 4) ~ 'caution', 
                                            avg_dbi <= 3 ~ 'acceptable',
                                            TRUE ~ "unknown"),
-         `Flat Tree Diam. Dist.` = ifelse(Unit_Code %in% c('SAHI', 'MORR'), "critical", "acceptable"))
+         `Flat Tree Diam. Dist.` = "acceptable") # None of the macrogroups had flat diam dist
 
 
 status_metrics_3b <- left_join(status_metrics_3a, 
-                               comp_natcan %>% select(Network, Unit_Code, sap_dens_pct_NatCan, seed_dens_pct_NatCan), 
-                               by = "Unit_Code") 
+                               comp_natcan %>% select(mg_short, sap_dens_pct_NatCan, seed_dens_pct_NatCan), 
+                               by = "mg_short") 
 
 status_metrics_3 <- status_metrics_3b %>% mutate(
   `Sapling Composition` = case_when(sap_dens_pct_NatCan < 0.5 ~ "critical",
@@ -721,35 +644,36 @@ status_metrics_3 <- status_metrics_3b %>% mutate(
 
 names(status_metrics_3)
 # Reorder columns
-status_metrics_3 <- status_metrics_3 %>% select(Network, Unit_Code, avg_sap_dens:`Stocking Index`, 
+status_metrics_3 <- status_metrics_3 %>% select(mg_short, avg_sap_dens:`Stocking Index`, 
                                                 `Sapling Composition`, `Seedling Composition`,
                                                 everything())
 
 # Flat Tree Diam. Dist. was determined by modelling linear and exponential fit to diameter distribution.
 # If linear had the lowest AIC, then the distribution has fewer small trees than expected.
 
-status_met_long <- status_metrics_3 %>% select(Unit_Code, `Sapling Density`:`Flat Tree Diam. Dist.`) %>% 
-  pivot_longer(-Unit_Code, names_to = "labels", values_to = "sign") %>% 
-  mutate(metgrp = "Status", order = rep(c(1:2,4:10), 39)) %>% rename(park = Unit_Code) %>% 
-  select(park, order, labels, metgrp, sign)
+status_met_long <- status_metrics_3 %>% select(mg_short, `Sapling Density`:`Flat Tree Diam. Dist.`) %>% 
+  pivot_longer(-mg_short, names_to = "labels", values_to = "sign") %>% 
+  mutate(metgrp = "Status", order = rep(c(1:2,4:10), 8)) %>%
+  select(mg_short, order, labels, metgrp, sign)
 
+head(status_met_long)
 
 # Add proportion of stocked plots based on park average DBI
 dens_c3 <- dens_df %>% filter(cycle == 3) 
 
-dbi_stock_c3 <- dens_c3 %>% group_by(Unit_Code) %>% 
+dbi_stock_c3 <- dens_c3 %>% group_by(mg_short) %>% 
   mutate(avg_DBI = mean(DBI, na.rm = T)) %>% ungroup() %>% 
   mutate(stocked = case_when(avg_DBI <= 3 & stock_final >= 50 ~ 1,
                              avg_DBI > 3 & stock_final >= 100 ~ 1,
                              TRUE ~ 0))
 
-dbi_stock_sum <- dbi_stock_c3 %>% group_by(Unit_Code) %>% 
+dbi_stock_sum <- dbi_stock_c3 %>% group_by(mg_short) %>% 
   summarize(avg_stock = mean(stock_final, na.rm = TRUE),
             avg_DBI = first(avg_DBI),
             num_stocked = sum(stocked, na.rm = TRUE),
             num_plots = sum(!is.na(stocked)),
             prop_stocked = num_stocked/num_plots) %>% 
-  rename(park = Unit_Code) %>% mutate(order = 3)
+  mutate(order = 3)
 
 table(dbi_stock_sum$avg_DBI)
 
@@ -759,7 +683,7 @@ prop_stock <- dbi_stock_sum %>% mutate(labels = "% Stocked Plots",
                                                         between(prop_stocked, 0.33, 0.669) ~ 'caution', 
                                                         prop_stocked > 0.67 ~ "acceptable",
                                                         TRUE ~ 'unknown')) %>% 
-  select(park, order, labels, metgrp, sign)
+  select(mg_short, order, labels, metgrp, sign)
 
 head(prop_stock)
 head(status_met_long)
@@ -768,20 +692,20 @@ head(status_met_long)
 
 # 4 groups instead of 5
 
-reg_stat_1 <- c("ANTI", "CATO", "CHOH", "GEWA", "HAFE", "MANA", "MIMA", "MORR", "ROVA", "SAHI", "THST", "VAFO", "WEFA")
-reg_stat_2 <- c("COLO", "FRSP", "HOFU", "NACE", "PRWI", "ROCR", "SARA")
-reg_stat_3 <- c("ALPO", "GWMP", "JOFL", "MONO", "RICH", "WOTR")
-reg_stat_4 <- c("APCO", "BLUE", "BOWA", "DEWA", "FONE", "FRHI", "GARI", "MABI", "NERI", "PETE", "SAGA")
-reg_stat_5 <- c("ACAD", "GETT")
+# reg_stat_1 <- c("ANTI", "CATO", "CHOH", "GEWA", "HAFE", "MANA", "MIMA", "MORR", "ROVA", "SAHI", "THST", "VAFO", "WEFA")
+# reg_stat_2 <- c("COLO", "FRSP", "HOFU", "NACE", "PRWI", "ROCR", "SARA")
+# reg_stat_3 <- c("ALPO", "GWMP", "JOFL", "MONO", "RICH", "WOTR")
+# reg_stat_4 <- c("APCO", "BLUE", "BOWA", "DEWA", "FONE", "FRHI", "GARI", "MABI", "NERI", "PETE", "SAGA")
+# reg_stat_5 <- c("ACAD", "GETT")
 
-results_comb <- rbind(status_met_long, prop_stock, result_sum3) %>% arrange(park, order) 
+results_comb <- rbind(status_met_long, prop_stock, result_sum3) %>% arrange(mg_short, order) 
 
-results_comb <- results_comb %>% 
-  mutate(park_reggrp = case_when(park %in% reg_stat_1 ~ "Imminent Failure",
-                                 park %in% c(reg_stat_2, reg_stat_3) ~ "Probable Failure",
-                                 park %in% reg_stat_4 ~ "Insecure", 
-                                 park %in% reg_stat_5 ~ "Secure",
-                                 TRUE ~ NA_character_))
+# results_comb <- results_comb %>% 
+#   mutate(park_reggrp = case_when(park %in% reg_stat_1 ~ "Imminent Failure",
+#                                  park %in% c(reg_stat_2, reg_stat_3) ~ "Probable Failure",
+#                                  park %in% reg_stat_4 ~ "Insecure", 
+#                                  park %in% reg_stat_5 ~ "Secure",
+#                                  TRUE ~ NA_character_))
 
 head(results_comb)
 
@@ -794,26 +718,15 @@ results_comb$label_order <- factor(results_comb$labels,
 results_comb$metgrp <- factor(results_comb$metgrp, levels = c("Status", "Total", "Native Canopy", "Other Native",
                                                               "Exotic"))
 
-results_comb$park_reggrp <- factor(results_comb$park_reggrp, levels = c("Imminent Failure", "Probable Failure", "Insecure", "Secure"))
+# results_comb$park_reggrp <- factor(results_comb$park_reggrp, levels = c("Imminent Failure", "Probable Failure", "Insecure", "Secure"))
+results_final <- left_join(mg_df_simp %>% select(-MACROGROUP_NAME), 
+                           results_comb, by = "mg_short") %>% 
+  arrange(lat_rank, metgrp, label_order)
 
-table(results_comb$park_reggrp)
-
-head(results_comb)
-sort(unique(results_comb$sign))
-
-results_tally <- results_comb %>% group_by(park, park_reggrp) %>% 
-  filter(sign %in% c("critical", "signdec_bad", "signinc_bad")) %>% 
-  summarize(num_bad = n())    
-head(results_tally)
-
-#results_comb$park_order <- reorder(results_comb$park, results_comb$park_reggrp)
-results_final <- results_comb %>% arrange(park, metgrp, label_order)
-
-head(results_final)
-sort(unique(results_final$sign))
+results_final$mg_ord <- reorder(results_final$mg_short, desc(results_final$lat_rank))
 
 results_plot <- 
-  ggplot(results_final, aes(x = park, y = label_order))+
+  ggplot(results_final, aes(x = mg_ord, y = label_order))+
   geom_tile(aes(fill = sign), color = 'grey')+
   geom_text(aes(label = case_when(sign == "critical" ~ "●",
                                   sign == "caution" ~ "○",
@@ -822,7 +735,7 @@ results_plot <-
                                   sign == "signdec_good" ~ "-",
                                   sign == "signinc_good" ~ "+", 
                                   TRUE ~ "")))+
-  facet_grid(metgrp ~ park_reggrp, scales = 'free', space = 'free', switch = "y")+
+  facet_grid(metgrp ~ mg_ord, scales = 'free', space = 'free', switch = "y")+
   scale_fill_manual(values = c('critical' = "#FF5B5B", 
                                'caution' = "#FFFF79",
                                'acceptable' = '#BDEBA7',
@@ -844,12 +757,16 @@ results_plot <-
   scale_x_discrete(position = 'top')+
   scale_y_discrete(limits = rev)+
   theme_bw()+
-  theme(axis.text.x = element_text(angle = 90),
+  theme(axis.text.x = element_blank(),
+        #axis.text.x = element_text(angle = 45, hjust = 0, size = 10),
+        axis.ticks = element_blank(),
         axis.text = element_text(size = 9),
         strip.text.y = element_text(size = 10),
-        strip.text.x = element_text(size = 10),
+        strip.text.x = element_text(size = 8.5),
         text = element_text(size = 9),
         #strip.placement = 'outside',
+        #strip.background.x = element_blank(), 
+        #strip.text.x = element_blank(),
         legend.spacing.x = unit(0.5, 'cm'),
         legend.position = 'bottom',
         legend.title = element_text(size = 9), 
@@ -860,7 +777,7 @@ results_plot <-
 
 results_plot
 
-ggsave("./results/20220325/results_grid_symbols.svg", 
+ggsave("./results/20220325/results_grid_symbols_mg.svg", 
        height = 8, width = 11, units = 'in')
 
 # Had to open the svg in notepad and tweak the legend by hand to get symbols and
