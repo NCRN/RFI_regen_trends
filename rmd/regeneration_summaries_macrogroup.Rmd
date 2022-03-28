@@ -95,7 +95,7 @@ cat(readLines('Methods.html'))
 
 #### Regeneration Status
 
-```{r grid, fig.cap = numFig("Summary of status and trends for each metric and Macrogroup combination grouped by regeneration condition adapted from <a href='https://www.fs.fed.us/nrs/pubs/jrnl/2018/nrs_2018_vickers_001.pdf'>Vickers et al. (2018).</a> Regeneration status categories are defined as: "), out.width = "90%"}
+```{r grid, fig.cap = numFig("Summary of status and trends for each metric and Macrogroup combination ordered from high to low latitude"), out.width = "90%"}
 include_graphics("../results/20220325/results_grid_symbols_FINAL_mg.svg")
 ```
 
