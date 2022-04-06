@@ -95,22 +95,22 @@ cat(readLines('Methods.html'))
 #### Regeneration Status
 
 ```{r grid, fig.cap = numFig("Summary of status and trends for each metric and park combination grouped by regeneration condition adapted from <a href='https://www.fs.fed.us/nrs/pubs/jrnl/2018/nrs_2018_vickers_001.pdf'>Vickers et al. (2018).</a> Regeneration status categories are defined as: "), out.width = "90%"}
-include_graphics("../results/20220325/results_grid_symbols_FINAL.svg")
+include_graphics("../results/20220325/results_grid_symbols_Final_20220405.svg")
 ```
 
 <p class='caption'>
 <ul>
-<li><b>Imminent Failure:</b> Parks that are experiencing severe regeneration failure and are at risk of forest loss. In some cases, for example MORR, forest loss is already underway.</li>
-<li><b>Probable Failure:</b> Parks are also experiencing regeneration failure as indicated by lacking and/or declining sapling density, although seedlings are more abundant than in the Imminent Failure category.</li>
-<li><b>Insecure: </b> Parks lack sapling density, but have sufficient and often increasing seedling layers and overall lower deer browse impacts. Significant trends in the Insecure category tend to be due to forest dynamics, like succession, than regeneration failure.</li>
-<li><b>Secure: </b> Parks have abundant seedling and sapling layers and show few concerning trends.</li>
+<li><b>Imminent Failure:</b> Parks with six or more status metrics that are rated "Critical". Parks that are experiencing severe regeneration failure and are at risk of forest loss. In some cases, for example MORR, forest loss is already underway.</li>
+<li><b>Probable Failure:</b> Parks with four to five status metrics that are rated "Critical". Parks are also experiencing regeneration failure as indicated by lacking and/or declining sapling density, although seedlings are more abundant than in the Imminent Failure category.</li>
+<li><b>Insecure: </b> Parks with one to three status metrics that are rated "Critical". Parks lack sapling density, but have sufficient and often increasing seedling layers and overall lower deer browse impacts. Significant trends in the Insecure category tend to be due to forest dynamics, like succession, than regeneration failure.</li>
+<li><b>Secure: </b> Abbreviated as Sec. Parks with no status metrics rated "Critical". Parks have abundant seedling and sapling layers and show few concerning trends.</li>
 </ul>
 </p>
 <p class='caption'>
 Status metrics (row 1) are based on the most recent 4 years of data (2016:2019). Status thresholds were defined as:
 <ul class = 'caption'>
 <li><b>Sapling Density: </b> Densities &lt; 0.1 stems/sq.m are classified as Critical; densities between 0.1 – 0.3 stems/sq.m are classified as Caution (Niewinski et al. 2006); densities ≥ 0.3 stems/sq.m are classified as Acceptable.</li>
-<li><b>Sapling Density: </b> Densities &lt; 0.25 stems/sq.m are classified as Critical; densities between 0.25 – 1.99 stems/sq.m are classified as Caution; densities ≥ 2 stems/sq.m are classified as Acceptable.</li>
+<li><b>Seedling Density: </b> Densities &lt; 0.25 stems/sq.m are classified as Critical; densities between 0.25 – 1.99 stems/sq.m are classified as Caution; densities ≥ 2 stems/sq.m are classified as Acceptable.</li>
 <li><b>% Stocked Plots: </b> Proportions &lt;33% are classified as Critical; proportions between 33% – 66% are classified as Caution; proportions ≥ 67% stems/sq.m is classified as Acceptable. Note that stocking thresholds are adjusted based on park average deer browse index, such that parks that average 3 or higher for deer browse index must have a stocking index of 100 to be considered stocked. Parks that average &lt; 3 for deer browse index only require a stocking index of 50 to be stocked.</li>
 <li><b>Stocking Index: </b> Average stocking &lt; 25 is classified as Critical; average stocking between 25 – 100 is classified as Caution; average stocking ≥ 100 is classified as Acceptable (McWilliams et al. 2015). Note that the stocking index only includes native canopy-forming species, and does not include ash species (<i>Fraxinus</i> spp.).</li>
 <li><b>Deer Browse Impacts: </b> Average DBI ≥ 4 is classified as Critical; average DBI between 3.01 – 3.99 is classified as Caution; average DBI ≤ 3 is classified as Acceptable (McWilliams et al. 2015).</li>
@@ -127,7 +127,7 @@ Trend metrics (rows 2-5) are grouped by species type, with Total including all t
 
 #### Regeneration Status Map
 ```{r regmap, fig.cap = numFig("Map of Region 1 parks by regeneration status. Parks in the <b>Imminent Failure</b> regeneration category are experiencing regeneration failure and are at risk of forest loss. In some cases, for example MORR, forest loss is already underway. Parks in the <b>Probable Failure</b> category are also experiencing regeneration failure as indicated by lacking and/or declining sapling density, although seedlings are more abundant than in the Severe category. Parks in the <b>Insecure</b> category lack sapling density, but have sufficient and often increasing seedling layers and overall lower deer browse impacts. Significant trends in the <b>Secure</b> category tend to be due to forest dynamics, like succession, than regeneration failure. Parks in the Secure category have abundant seedling and sapling layers and show few concerning trends.."), dpi = 600, out.width = "90%"}
-include_graphics("../results/NPS_RegenStatus_Region1.jpg")
+include_graphics("../results/Region1_manuscript.jpg")
 ```
 
 ### Regional Trends {.tabset}
