@@ -738,50 +738,58 @@ prop_stock <- dbi_stock_sum %>% mutate(labels = "% Stocked Plots",
 head(prop_stock)
 head(status_met_long)
 
-#results_comb <- rbind(status_met_long, prop_stock, result_sum3) %>% arrange(park, order) 
+# Determing groupings based on # critical status metrics
+status_met_long_final <- rbind(status_met_long, prop_stock) %>% arrange(park, order)
 
-# 4 groups instead of 5
 
-reg_stat_1 <- c("ANTI", "CATO", "CHOH", "GEWA", "HAFE", "MANA", "MIMA", "MORR", "ROVA", "SAHI", "THST", "VAFO", "WEFA")
-reg_stat_2 <- c("COLO", "FRSP", "HOFU", "NACE", "PRWI", "ROCR", "SARA")
-reg_stat_3 <- c("ALPO", "GWMP", "JOFL", "MONO", "RICH", "WOTR")
-reg_stat_4 <- c("APCO", "BLUE", "BOWA", "DEWA", "FONE", "FRHI", "GARI", "MABI", "NERI", "PETE", "SAGA")
-reg_stat_5 <- c("ACAD", "GETT")
+# Original grouping before ash was demoted
+# reg_stat_1 <- c("ANTI", "CATO", "CHOH", "GEWA", "HAFE", "MANA", "MIMA", "MORR", "ROVA", "SAHI", "THST", "VAFO", "WEFA")
+# reg_stat_2 <- c("COLO", "FRSP", "HOFU", "NACE", "PRWI", "ROCR", "SARA")
+# reg_stat_3 <- c("ALPO", "GWMP", "JOFL", "MONO", "RICH", "WOTR")
+# reg_stat_4 <- c("APCO", "BLUE", "BOWA", "DEWA", "FONE", "FRHI", "GARI", "MABI", "NERI", "PETE", "SAGA")
+# reg_stat_5 <- c("ACAD", "GETT")
 
-results_comb <- rbind(status_met_long, prop_stock, result_sum3) %>% arrange(park, order) 
+regstat_group <- status_met_long_final %>% filter(metgrp == "Status") %>% 
+  group_by(park) %>% summarize(num_crit = sum(sign == "critical", na.rm = T),
+                               park_reggrp = case_when(num_crit > 5 ~ "Imminent Failure",
+                                                       between(num_crit, 4, 5) ~ "Probable Failure",
+                                                       between(num_crit, 1, 3) ~ "Insecure",
+                                                       num_crit == 0 ~ "Sec.",
+                                                       TRUE ~ 'undefined'))
 
-results_comb <- results_comb %>% 
-  mutate(park_reggrp = case_when(park %in% reg_stat_1 ~ "Imminent Failure",
-                                 park %in% c(reg_stat_2, reg_stat_3) ~ "Probable Failure",
-                                 park %in% reg_stat_4 ~ "Insecure", 
-                                 park %in% reg_stat_5 ~ "Secure",
-                                 TRUE ~ NA_character_))
+results_comb <- rbind(status_met_long_final, result_sum3) %>% arrange(park, order) 
 
-head(results_comb)
+results_comb2 <- left_join(results_comb, regstat_group, by = 'park') %>% arrange(park, order)
+head(results_comb2)
+#   mutate(park_reggrp = case_when(park %in% reg_stat_1 ~ "Imminent Failure",
+#                                  park %in% c(reg_stat_2, reg_stat_3) ~ "Probable Failure",
+#                                  park %in% reg_stat_4 ~ "Insecure", 
+#                                  park %in% reg_stat_5 ~ "Secure",
+#                                  TRUE ~ NA_character_))
 
-results_comb$label_order <- factor(results_comb$labels, 
+results_comb2$label_order <- factor(results_comb2$labels, 
                                    levels = c("Tree BA", "Tree Density", "Sapling BA", "Sapling Density", "Seedling Density", 
                                               "% Stocked Plots", "Stocking Index","Deer Browse Impacts", "Flat Tree Diam. Dist.",
                                               "Sapling Composition", "Seedling Composition", 
                                               "Sorensen Sapling", "Sorensen Seedling"))
 
-results_comb$metgrp <- factor(results_comb$metgrp, levels = c("Status", "Total", "Native Canopy", "Other Native",
-                                                              "Exotic"))
+results_comb2$metgrp <- factor(results_comb2$metgrp, levels = c("Status", "Total", "Native Canopy", "Other Native",
+                                                               "Exotic"))
 
-results_comb$park_reggrp <- factor(results_comb$park_reggrp, levels = c("Imminent Failure", "Probable Failure", "Insecure", "Secure"))
+results_comb2$park_reggrp <- factor(results_comb2$park_reggrp, levels = c("Imminent Failure", "Probable Failure", "Insecure", "Sec."))
 
-table(results_comb$park_reggrp)
+table(results_comb2$park_reggrp)
 
-head(results_comb)
-sort(unique(results_comb$sign))
+#sort(unique(results_comb2$sign))
 
-results_tally <- results_comb %>% group_by(park, park_reggrp) %>% 
+results_tally <- results_comb2 %>% group_by(park, park_reggrp) %>% 
   filter(sign %in% c("critical", "signdec_bad", "signinc_bad")) %>% 
   summarize(num_bad = n())    
+
 head(results_tally)
 
 #results_comb$park_order <- reorder(results_comb$park, results_comb$park_reggrp)
-results_final <- results_comb %>% arrange(park, metgrp, label_order)
+results_final <- results_comb2 %>% arrange(park, metgrp, label_order)
 
 head(results_final)
 sort(unique(results_final$sign))
@@ -821,7 +829,7 @@ results_plot <-
   theme(axis.text.x = element_text(angle = 90),
         axis.text = element_text(size = 9),
         strip.text.y = element_text(size = 10),
-        strip.text.x = element_text(size = 10),
+        strip.text.x = element_text(size = 9),
         text = element_text(size = 9),
         #strip.placement = 'outside',
         legend.spacing.x = unit(0.5, 'cm'),
@@ -834,7 +842,9 @@ results_plot <-
 
 results_plot
 
-ggsave("./results/20220325/results_grid_symbols.svg", 
+write.csv(results_final, "./results/20220325/results_for_Fig2.csv", row.names = F)
+
+ggsave("./results/20220325/results_grid_symbols_20220405.svg", 
        height = 8, width = 11, units = 'in')
 
 # Had to open the svg in notepad and tweak the legend by hand to get symbols and
