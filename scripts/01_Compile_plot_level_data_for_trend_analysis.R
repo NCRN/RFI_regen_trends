@@ -2100,7 +2100,6 @@ plot_check
 nrow(reg_final) #4465
 length(unique(reg_final$Plot_Name)) #1515
 
-#Ran this with a different date after running this script with a few changes to see if it works locally
 write.csv(reg_final, paste0(datapath, "EFWG_full_dataset_20220325.csv"), row.names = FALSE) 
 
 #------- Composition Proportion Data Compile --------
@@ -2177,7 +2176,7 @@ comp_park_rel <- comp_park %>%
          sap_dens_check = sap_dens_pct_NatCan_rel + sap_dens_pct_NatOth_rel + sap_dens_pct_Exotic_rel,
          seed_dens_check = seed_dens_pct_NatCan_rel + seed_dens_pct_NatOth_rel + seed_dens_pct_Exotic_rel)
 
-
+head(comp_park_rel)
 write.csv(comp_park_rel, "./data/EFWG_proportion_regen_20220325.csv", row.names = F)
 head(comp_park_rel)
 
