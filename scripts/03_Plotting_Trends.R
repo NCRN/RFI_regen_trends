@@ -21,23 +21,23 @@ names(dens_df)
 dens_df <- dens_df[,c(1:16, 107, 17:106)]
 dens_c3 <- dens_df %>% filter(cycle == 3) 
 
-boot_results1 <- read.csv("./results/20220325/all_metrics_randint_20220325.csv")
+boot_results <- read.csv("./results/20220325/all_metrics_randint_20220325.csv")
 #boot_results_spp <- read.csv("./results/20220325/spp_metrics_randint_20220325.csv")
 #boot_results_comb <- rbind(boot_results1, boot_results_spp)
 
-lat_rank <- read.csv(paste0(datapath, "EFWG_lat_order.csv"))[,c("park", "network", "lat.rank")]
-boot_results <- left_join(boot_results1, lat_rank, by = 'park') %>% rename(lat_rank = lat.rank)
-boot_results$park_ord <- reorder(boot_results$park, desc(boot_results$lat_rank))
-boot_results$network[boot_results$park %in% c("COLO", "SAHI", "THST")] <- "NCBN" # in case this hasn't been changed
-boot_results$network_ord <- factor(boot_results$network, levels = c("NETN", "ERMN", "NCRN", "NCBN", "MIDN"))
-table(boot_results$network)
+# lat_rank <- read.csv(paste0(datapath, "EFWG_lat_order.csv"))[,c("park", "network", "lat.rank")]
+# boot_results <- left_join(boot_results1, lat_rank, by = 'park') %>% rename(lat_rank = lat.rank)
+# boot_results$park_ord <- reorder(boot_results$park, desc(boot_results$lat_rank))
+# boot_results$network[boot_results$park %in% c("COLO", "SAHI", "THST")] <- "NCBN" # in case this hasn't been changed
+# boot_results$network_ord <- factor(boot_results$network, levels = c("NETN", "ERMN", "NCRN", "NCBN", "MIDN"))
+# table(boot_results$network)
 
 # Percent Composition
 comp <- read.csv("./data/EFWG_proportion_regen_20220325.csv")
 head(comp)
 
-comp_natcan <- left_join(comp, dens_c3 %>% select(Unit_Code, lat_rank) %>% unique(),
-                         by = "Unit_Code") #%>% 
+# comp_natcan <- left_join(comp, dens_c3 %>% select(Unit_Code, lat_rank) %>% unique(),
+#                          by = "Unit_Code") #%>% 
   # filter(Species == "Native Species") %>% # actually Native Canopy
   # filter(Metric %in% c("Sapling Density", "Seedling Density"))   
 
@@ -93,13 +93,12 @@ park_met_list <- data.frame(expand.grid(unique(dens_df$Unit_Code), metrics)) %>%
 park_list <- c(park_met_list[,1])
 met_list <- c(park_met_list[,2])
 
-boot_results$strp_col <- case_when(boot_results$network == "ERMN" ~ "#A5BDCD",
-                                   boot_results$network == "MIDN" ~ "#E7CDA4",
-                                   boot_results$network == "NCBN" ~ "#CFB9D9",
-                                   boot_results$network == "NCRN" ~ "#E1E59B",
-                                   boot_results$network == "NETN" ~ "#AACCA7") 
+boot_results$strp_col <- case_when(boot_results$Network == "ERMN" ~ "#A5BDCD",
+                                   boot_results$Network == "MIDN" ~ "#E7CDA4",
+                                   boot_results$Network == "NCBN" ~ "#CFB9D9",
+                                   boot_results$Network == "NCRN" ~ "#E1E59B",
+                                   boot_results$Network == "NETN" ~ "#AACCA7") 
 
-boot_results <- boot_results %>% rename(Network = network)
 table(boot_results$Network)
 head(boot_results)
 
@@ -404,15 +403,15 @@ leg_linesp <- ggplot(data = data.frame(spgrp = c("Exotic", "NatCan", "NatOth"),
   theme_bw()+ geom_line(size = 0.5)+  
   geom_point(size = 1.5)+
   scale_fill_manual(values = c("NatCan" = "#2BA12E", "NatOth" = "#B9B9B9", "Exotic" = "#CD5C5C"), 
-                    labels = c("Native Canopy", "Native Other", "Exotic"),
+                    labels = c("Native Canopy", "Native Subcanopy", "Exotic"),
                     name = "Groups:",
                     drop = FALSE)+
   scale_color_manual(values = c("NatCan" = "#2BA12E", "NatOth" = "#B9B9B9", "Exotic" = "#CD5C5C"), 
-                     labels = c("Native Canopy", "Native Other", "Exotic"),
+                     labels = c("Native Canopy", "Native Subcanopy", "Exotic"),
                      name = "Groups:",
                      drop = FALSE)+
   scale_shape_manual(values = c("NatCan" = 24, "NatOth" = 21, "Exotic" = 25),
-                     labels = c("Native Canopy", "Native Other", "Exotic"),
+                     labels = c("Native Canopy", "Native Subcanopy", "Exotic"),
                      name = "Groups:",
                      drop = FALSE)+
   theme(legend.position = 'bottom', legend.title = element_text(size = 7), 
@@ -452,7 +451,7 @@ walk(metrics, function(metric){
   
   grid.arrange(grobs = list(g, leg_glinesp, leg_gline2, leg_gnet),
                heights = c(6.5, 0.5),
-               widths = c(0.55, 2.75, 3.125, 3.35, 0.25),
+               widths = c(0.55, 2.75, 3.3, 3.0, 0.25),
                layout_matrix = rbind(c(1, 1, 1, 1, 1),
                                      c(NA, 2, 3, 4, NA)))
   dev.off()
@@ -484,7 +483,7 @@ walk(metrics, function(metric){
   
   grid.arrange(grobs = list(g, leg_glinesp, leg_gline2, leg_gnet),
                heights = c(6.5, 0.5),
-               widths = c(0.55, 2.75, 3.125, 3.35, 0.25),
+               widths = c(0.55, 2.75, 3.3, 3.0, 0.25),
                layout_matrix = rbind(c(1, 1, 1, 1, 1),
                                      c(NA, 2, 3, 4, NA)))
   dev.off()
@@ -631,24 +630,21 @@ result_sum2$num_sign_bad[result_sum2$park %in% c("SAHI", "WOTR")] <- -1
 #result_sum2$park_order <- reorder(result_sum2$park, desc(result_sum2$num_sign_bad))
 result_sum2 <- result_sum2 %>% mutate(metgrp = factor(case_when(grepl("Total", resp) ~ "Total",
                                                                 grepl("NatCan|stock", resp) ~ "Native Canopy",
-                                                                grepl("NatOth", resp) ~ "Other Native",
+                                                                grepl("NatOth", resp) ~ "Native Subcan.",
                                                                 grepl("Exotic", resp) ~ "Exotic",
                                                                 grepl("Sor|Hor", resp) ~ "Similarity", 
                                                                 TRUE ~ "Unk"),
-                                                      levels = c("Total", "Native Canopy", "Other Native",
+                                                      levels = c("Total", "Native Canopy", "Native Subcan.",
                                                                  "Exotic", "Similarity")
 )) %>% select(park, order, labels, metgrp, sign)
+
 head(result_sum2)
+table(result_sum2$metgrp)
+
 # decided to drop similarity trends because more confusing than helpful
 result_sum3 <- result_sum2 %>% filter(metgrp != "Similarity") %>% droplevels()
 levels(result_sum3$metgrp)
 head(dens_df)
-
-head(comp_natcan)
-# 
-# comp_natcan_wide <- comp_natcan %>% mutate(Metric = paste0("pctNatCan", word(Metric, 1))) %>% 
-#   select(Network, Unit_Code, Metric, Mean) %>% 
-#   pivot_wider(names_from = "Metric", values_from = "Mean") 
 
 status_metrics_3a <- dens_df %>% filter(cycle == 3) %>% 
   group_by(Unit_Code) %>% 
@@ -681,7 +677,7 @@ status_metrics_3a <- dens_df %>% filter(cycle == 3) %>%
 
 
 status_metrics_3b <- left_join(status_metrics_3a, 
-                               comp_natcan %>% select(Network, Unit_Code, sap_dens_pct_NatCan, seed_dens_pct_NatCan), 
+                               comp %>% select(Network, Unit_Code, sap_dens_pct_NatCan, seed_dens_pct_NatCan), 
                                by = "Unit_Code") 
 
 status_metrics_3 <- status_metrics_3b %>% mutate(
@@ -759,6 +755,7 @@ regstat_group <- status_met_long_final %>% filter(metgrp == "Status") %>%
 
 results_comb <- rbind(status_met_long_final, result_sum3) %>% arrange(park, order) 
 
+
 results_comb2 <- left_join(results_comb, regstat_group, by = 'park') %>% arrange(park, order)
 head(results_comb2)
 #   mutate(park_reggrp = case_when(park %in% reg_stat_1 ~ "Imminent Failure",
@@ -772,8 +769,9 @@ results_comb2$label_order <- factor(results_comb2$labels,
                                               "% Stocked Plots", "Stocking Index","Deer Browse Impacts", "Flat Tree Diam. Dist.",
                                               "Sapling Composition", "Seedling Composition", 
                                               "Sorensen Sapling", "Sorensen Seedling"))
-
-results_comb2$metgrp <- factor(results_comb2$metgrp, levels = c("Status", "Total", "Native Canopy", "Other Native",
+head(results_comb2)
+levels(results_comb2$metgrp)
+results_comb2$metgrp <- factor(results_comb2$metgrp, levels = c("Status", "Total", "Native Canopy", "Native Subcan.",
                                                                "Exotic"))
 
 results_comb2$park_reggrp <- factor(results_comb2$park_reggrp, levels = c("Imminent Failure", "Probable Failure", "Insecure", "Sec."))

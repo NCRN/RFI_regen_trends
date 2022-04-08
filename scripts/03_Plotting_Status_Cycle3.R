@@ -217,7 +217,7 @@ comp <- read.csv("./data/EFWG_proportion_regen_20220325.csv")
 comp_lat <- left_join(comp, dens_c3 %>% select(Unit_Code, lat_rank) %>% unique(),
                       by = c("Unit_Code", "lat_rank"))
 
-head(boot_sppgrp_comb)
+head(comp_lat)
 
 # Matching networks to colors for facet strips
 park_cols <- rbind(data.frame(park_ord = "BLNK", strp_col = "white"),
@@ -254,11 +254,11 @@ leg_barsp <- ggplot(data = data.frame(spgrp = c("Exotic", "NatCan", "NatOth"),
   theme_bw()+
   geom_histogram()+
   scale_fill_manual(values = c("NatCan" = "#99D899", "NatOth" = "#A7AFA7", "Exotic" = "#CD5C5C"),
-                    labels = c("Native Canopy", "Native Other", "Exotic"),
+                    labels = c("Native Canopy", "Native Subcanopy", "Exotic"),
                     name = "Groups:",
                     drop = FALSE)+
   scale_color_manual(values = c("NatCan" = "#99D899", "NatOth" = "#A7AFA7", "Exotic" = "#CD5C5C"),
-                    labels = c("Native Canopy", "Native Other", "Exotic"),
+                    labels = c("Native Canopy", "Native Subcanopy", "Exotic"),
                     name = "Groups:",
                     drop = FALSE)+
   theme(legend.position = 'bottom', legend.title = element_text(size = 10),
@@ -273,7 +273,7 @@ comp_long <- comp_lat %>% select(Network, Unit_Code, lat_rank, sap_ba_pct_NatCan
                           pivot_longer(sap_ba_pct_NatCan_rel:seed_dens_pct_Exotic_rel, 
                                        names_to = "Metric", values_to = "Mean") %>% 
                           mutate(Species = case_when(grepl("NatCan", .$Metric) ~ "Native Canopy",
-                                                     grepl("NatOth", .$Metric) ~ "Other Native Species",
+                                                     grepl("NatOth", .$Metric) ~ "Native Subcanopy",
                                                      grepl("Exotic", .$Metric) ~ "Exotic"),
                                  Metric = case_when(grepl("sap_ba", .$Metric) ~ "Sapling BA", 
                                                     grepl("sap_dens", .$Metric) ~ "Sapling Density",
@@ -281,7 +281,7 @@ comp_long <- comp_lat %>% select(Network, Unit_Code, lat_rank, sap_ba_pct_NatCan
 
 head(comp_long)
 
-comp_long$Species <- factor(comp_long$Species, levels = c("Native Canopy", "Other Native Species", "Exotic"))
+comp_long$Species <- factor(comp_long$Species, levels = c("Native Canopy", "Native Subcanopy", "Exotic"))
 
 comp_long$park_order <- reorder(comp_long$Unit_Code, desc(comp_long$lat_rank))
 
@@ -290,7 +290,7 @@ p <-
                 aes(x = Metric, y = Mean, fill = Species)) +
        geom_bar(stat = 'identity') + facet_wrap(~park_order, ncol = 8) +
        scale_fill_manual(values = c("Native Canopy" = "#99D899",
-                                    "Other Native Species" = "#A7AFA7",
+                                    "Native Subcanopy" = "#A7AFA7",
                                     "Exotic" = "#CD5C5C"))+
        labs(y = "Avg. % of Total Saplings or Seedlings", x = NULL) +
        coord_flip() +

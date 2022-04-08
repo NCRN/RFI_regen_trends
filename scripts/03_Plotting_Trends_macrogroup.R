@@ -180,7 +180,7 @@ leg_line <- ggplot(data = data.frame(sign = c("notmod", "nonsign", "signinc", "s
 
 # Extracting custom legends from fake plots
 leg_gline <- gtable_filter(ggplot_gtable(ggplot_build(leg_line)), "guide-box")
-leg_gnet <- gtable_filter(ggplot_gtable(ggplot_build(leg_net)), "guide-box")
+#leg_gnet <- gtable_filter(ggplot_gtable(ggplot_build(leg_net)), "guide-box")
 
 # Plot and save the results for each metric that facets on park with fixed axes
 
@@ -402,15 +402,15 @@ leg_linesp <- ggplot(data = data.frame(spgrp = c("Exotic", "NatCan", "NatOth"),
   theme_bw()+ geom_line(size = 0.5)+  
   geom_point(size = 1.5)+
   scale_fill_manual(values = c("NatCan" = "#2BA12E", "NatOth" = "#B9B9B9", "Exotic" = "#CD5C5C"), 
-                    labels = c("Native Canopy", "Native Other", "Exotic"),
+                    labels = c("Native Canopy", "Native Subcanopy", "Exotic"),
                     name = "Groups:",
                     drop = FALSE)+
   scale_color_manual(values = c("NatCan" = "#2BA12E", "NatOth" = "#B9B9B9", "Exotic" = "#CD5C5C"), 
-                     labels = c("Native Canopy", "Native Other", "Exotic"),
+                     labels = c("Native Canopy", "Native Subcanopy", "Exotic"),
                      name = "Groups:",
                      drop = FALSE)+
   scale_shape_manual(values = c("NatCan" = 24, "NatOth" = 21, "Exotic" = 25),
-                     labels = c("Native Canopy", "Native Other", "Exotic"),
+                     labels = c("Native Canopy", "Native Subcanopy", "Exotic"),
                      name = "Groups:",
                      drop = FALSE)+
   theme(legend.position = 'bottom', legend.title = element_text(size = 7), 
@@ -580,11 +580,11 @@ result_sum2 <- result_sum %>% group_by(mg_ord) %>%
 #result_sum2$park_order <- reorder(result_sum2$park, desc(result_sum2$num_sign_bad))
 result_sum2 <- result_sum2 %>% mutate(metgrp = factor(case_when(grepl("Total", resp) ~ "Total",
                                                                 grepl("NatCan|stock", resp) ~ "Native Canopy",
-                                                                grepl("NatOth", resp) ~ "Other Native",
+                                                                grepl("NatOth", resp) ~ "Native Subcan.",
                                                                 grepl("Exotic", resp) ~ "Exotic",
                                                                 grepl("Sor|Hor", resp) ~ "Similarity", 
                                                                 TRUE ~ "Unk"),
-                                                      levels = c("Total", "Native Canopy", "Other Native",
+                                                      levels = c("Total", "Native Canopy", "Native Subcan.",
                                                                  "Exotic", "Similarity")
 )) %>% select(mg_short, order, labels, metgrp, sign)
 head(result_sum2)
@@ -715,7 +715,7 @@ results_comb$label_order <- factor(results_comb$labels,
                                               "Sapling Composition", "Seedling Composition", 
                                               "Sorensen Sapling", "Sorensen Seedling"))
 
-results_comb$metgrp <- factor(results_comb$metgrp, levels = c("Status", "Total", "Native Canopy", "Other Native",
+results_comb$metgrp <- factor(results_comb$metgrp, levels = c("Status", "Total", "Native Canopy", "Native Subcan.",
                                                               "Exotic"))
 
 # results_comb$park_reggrp <- factor(results_comb$park_reggrp, levels = c("Imminent Failure", "Probable Failure", "Insecure", "Secure"))

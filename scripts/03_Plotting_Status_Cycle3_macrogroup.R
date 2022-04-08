@@ -273,11 +273,11 @@ leg_barsp <- ggplot(data = data.frame(spgrp = c("Exotic", "NatCan", "NatOth"),
   theme_bw()+
   geom_histogram()+
   scale_fill_manual(values = c("NatCan" = "#99D899", "NatOth" = "#A7AFA7", "Exotic" = "#CD5C5C"),
-                    labels = c("Native Canopy", "Native Other", "Exotic"),
+                    labels = c("Native Canopy", "Native Subcanopy", "Exotic"),
                     name = "Groups:",
                     drop = FALSE)+
   scale_color_manual(values = c("NatCan" = "#99D899", "NatOth" = "#A7AFA7", "Exotic" = "#CD5C5C"),
-                     labels = c("Native Canopy", "Native Other", "Exotic"),
+                     labels = c("Native Canopy", "Native Subcanopy", "Exotic"),
                      name = "Groups:",
                      drop = FALSE)+
   theme(legend.position = 'bottom', legend.title = element_text(size = 10),
@@ -289,11 +289,12 @@ leg_gbarsp <- gtable_filter(ggplot_gtable(ggplot_build(leg_barsp)), "guide-box")
 
 #----- Option 1, plot all 3 groups, so adds to 1
 comp_mg_rel <- read.csv("./data/EFWG_proportion_regen_20220325_mg.csv")
+head(comp_mg_rel)
 comp_long <- comp_mg_rel %>% select(mg_short, lat_rank, sap_ba_pct_NatCan_rel:seed_dens_pct_Exotic_rel) %>% 
                           pivot_longer(sap_ba_pct_NatCan_rel:seed_dens_pct_Exotic_rel, 
                                        names_to = "Metric", values_to = "Mean") %>% 
                           mutate(Species = case_when(grepl("NatCan", .$Metric) ~ "Native Canopy",
-                                                     grepl("NatOth", .$Metric) ~ "Other Native Species",
+                                                     grepl("NatOth", .$Metric) ~ "Native Subcanopy",
                                                      grepl("Exotic", .$Metric) ~ "Exotic"),
                                  Metric = case_when(grepl("sap_ba", .$Metric) ~ "Sapling BA", 
                                                     grepl("sap_dens", .$Metric) ~ "Sapling Density",
@@ -301,7 +302,7 @@ comp_long <- comp_mg_rel %>% select(mg_short, lat_rank, sap_ba_pct_NatCan_rel:se
 
 head(comp_long)
 
-comp_long$Species <- factor(comp_long$Species, levels = c("Native Canopy", "Other Native Species", "Exotic"))
+comp_long$Species <- factor(comp_long$Species, levels = c("Native Canopy", "Native Subcanopy", "Exotic"))
 
 comp_long$mg_order <- reorder(comp_long$mg_short, desc(comp_long$lat_rank))
 
@@ -310,7 +311,7 @@ p <-
                 aes(x = Metric, y = Mean, fill = Species)) +
        geom_bar(stat = 'identity') + facet_wrap(~mg_order, ncol = 4) +
        scale_fill_manual(values = c("Native Canopy" = "#99D899",
-                                    "Other Native Species" = "#A7AFA7",
+                                    "Native Subcanopy" = "#A7AFA7",
                                     "Exotic" = "#CD5C5C"))+
        labs(y = "Avg. % of Total Saplings or Seedlings", x = NULL) +
        coord_flip() +
