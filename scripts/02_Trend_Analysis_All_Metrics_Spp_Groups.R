@@ -75,6 +75,24 @@ boot_results <- map2_dfr(park_list, met_list,
                                                    num_reps = 1000, chatty = TRUE) %>%
                   mutate(park = paste(park), resp = paste(y))})
 
-#started 1:10 pm 11/2/21
-write.csv(boot_results, "./results/20220325/all_metrics_randint_20220325.csv", row.names = F)
+park1 <- unique(park_list)
+boot_results2 <- map_dfr(park1,
+                         function(park){case_boot_lmer(df = dens_df2 %>% filter(Unit_Code == park),
+                                                       x = "cycle", y = 'stock_final', ID = "Plot_Name",
+                                                       random_type = 'intercept',
+                                                       num_reps = 1000, chatty = TRUE) %>%
+                                        mutate(park = paste(park), resp = paste('stock_final'))})
 
+head(boot_results2)
+head(boot_results)
+#started 1:10 pm 11/2/21
+#write.csv(boot_results, "./results/20220325/all_metrics_randint_20220325.csv", row.names = F)
+boot_results <- read.csv("./results/20220325/all_metrics_randint_20220325.csv") %>% 
+  filter(resp != "stock_final")
+
+boot_results3 <- left_join(boot_results2, unique(boot_results %>% select(park, Network:strp_col)), 
+                           by = "park")
+
+boot_results <- rbind(boot_results, boot_results3) %>% arrange(Network, park, resp)
+
+write.csv(boot_results, "./results/20220325/all_metrics_randint_20220325.csv", row.names = F)

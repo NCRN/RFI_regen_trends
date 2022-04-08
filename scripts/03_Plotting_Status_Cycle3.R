@@ -26,21 +26,21 @@ status_metrics <- c("stock_final",
                     "Sor_sap", "Hor_sap", "Sor_seed", "Hor_seed")
 
 # Load trend results for later use
-boot_results1 <- read.csv("./results/20220325/all_metrics_randint_20220325.csv")
-lat_rank <- read.csv("./data/EFWG_lat_order.csv")[,c("park", "network", "lat.rank")]
-boot_results <- left_join(boot_results1, lat_rank, by = 'park') %>% rename(lat_rank = lat.rank)
+boot_results <- read.csv("./results/20220325/all_metrics_randint_20220325.csv")
+head(boot_results)
+# lat_rank <- read.csv("./data/EFWG_lat_order.csv")[,c("park", "network", "lat.rank")]
+# boot_results <- left_join(boot_results1, lat_rank, by = 'park') %>% rename(lat_rank = lat.rank)
 boot_results$park_ord <- reorder(boot_results$park, desc(boot_results$lat_rank))
-boot_results$network[boot_results$park %in% c("COLO", "SAHI", "THST")] <- "NCBN" # in case this hasn't been changed
-boot_results$network_ord <- factor(boot_results$network, levels = c("NETN", "ERMN", "NCRN", "NCBN", "MIDN"))
-table(boot_results$network)
+boot_results$Network[boot_results$park %in% c("COLO", "SAHI", "THST")] <- "NCBN" # in case this hasn't been changed
+boot_results$network_ord <- factor(boot_results$Network, levels = c("NETN", "ERMN", "NCRN", "NCBN", "MIDN"))
+table(boot_results$Network)
+head(boot_results)
+boot_results$strp_col <- case_when(boot_results$Network == "ERMN" ~ "#A5BDCD",
+                                   boot_results$Network == "MIDN" ~ "#E7CDA4",
+                                   boot_results$Network == "NCBN" ~ "#CFB9D9",
+                                   boot_results$Network == "NCRN" ~ "#E1E59B",
+                                   boot_results$Network == "NETN" ~ "#AACCA7") 
 
-boot_results$strp_col <- case_when(boot_results$network == "ERMN" ~ "#A5BDCD",
-                                   boot_results$network == "MIDN" ~ "#E7CDA4",
-                                   boot_results$network == "NCBN" ~ "#CFB9D9",
-                                   boot_results$network == "NCRN" ~ "#E1E59B",
-                                   boot_results$network == "NETN" ~ "#AACCA7") 
-
-boot_results <- boot_results %>% rename(Network = network)
 table(boot_results$Network)
 
 boot_sppgrp <- boot_results %>% filter(!resp %in% c("Hor_sap", "Hor_seed", "Sor_sap", "Sor_seed", "stock_final"))
@@ -322,27 +322,52 @@ p
   dev.off()
 
 
-# Species level composition plot  
-comp <- read.csv("./data/EFWG_proportion_regen_20211104.csv")
+# Species level composition plot (Fig 28)  
+comp <- read.csv("./data/EFWG_proportion_regen_species_20220325.csv")
+head(comp)
+names(comp)
+comp2 <- left_join(comp, dens_c3 %>% select(Unit_Code, Network) %>% unique(),
+                   by = c("Unit_Code"))
 
-comp_lat <- left_join(comp, dens_c3 %>% select(Unit_Code, lat_rank) %>% unique(),
-                        by = c("Unit_Code"))
-  
-comp_spp <- comp_lat %>% filter(Species %in% c("Ash", "American Beech", "Paw paw"))
-comp_spp$park_order <- reorder(comp_spp$Unit_Code, desc(comp_spp$lat_rank))
+comp_long <- comp2 %>% pivot_longer(-c("Unit_Code", "lat_rank", "Network", "park_order"),
+                                    names_to = 'Metric',
+                                    values_to = 'Prop') %>% 
+                       filter(!Metric %in% c("sap_ba_tot", "sap_dens_tot", "seed_dens_tot")) %>% 
+                       mutate(Species = case_when(grepl("FRAX", .data$Metric) ~ "Ash species",
+                                                  grepl("FAGGRA", .data$Metric) ~ "American Beech",
+                                                  grepl("ASITRI", .data$Metric) ~ "Paw paw",
+                                                  TRUE ~ "unassigned")) %>% # check field to drop
+                       filter(Species != "unassigned")
+
+# create resp column that drops spp
+comp_final <- comp_long %>% mutate(resp = gsub("_FRAX", "", 
+                                               gsub("_FAGGRA", "", 
+                                                    gsub("_ASITRI", "", 
+                                                         .data$Metric))),
+                                   Metric = case_when(resp == 'sap_ba_pct' ~ "Sapling BA",
+                                                      resp == "sap_dens_pct" ~ "Sapling Density",
+                                                      resp == "seed_dens_pct" ~ "Seedling Density")) %>%
+                            arrange(park_order, Metric, Species) %>% select(-resp)
+                            # select(-Metric) %>%
+                            # pivot_wider(names_from = resp, values_from = Prop)
+
+head(comp_final)
+
+#comp_spp <- comp_lat %>% filter(Species %in% c("Ash", "American Beech", "Paw paw"))
+comp_final$park_order <- reorder(comp_final$Unit_Code, desc(comp_final$lat_rank))
 
 # Fake plot for species group legend
-leg_bar_spp <- ggplot(data = data.frame(spgrp = c("Exotic", "NatOth"),
-                                        x = c(1, 2)), 
+leg_bar_spp <- ggplot(data = data.frame(spgrp = c("ASITRI", "FRAX", "FAGGRA"),
+                                        x = c(1, 2, 3)), 
                       aes(x = x, color = spgrp, fill = spgrp, shape = spgrp))+
   theme_bw()+ 
   geom_histogram()+
-  scale_fill_manual(values = c("Ash" = "#76AB81", "American Beech" = "#F9CB80", "Paw paw" = "#94BDEC"), 
-                    labels = c("Ash species", "American Beech", "Paw paw"),
+  scale_fill_manual(values = c("Paw paw" = "#94BDEC", "Ash" = "#76AB81", "American Beech" = "#F9CB80"), 
+                    labels = c("Paw paw", "Ash species", "American Beech"),
                     name = "Species:",
                     drop = FALSE)+
-  scale_color_manual(values = c("Ash" = "#76AB81", "American Beech" = "#F9CB80", "Paw paw" = "#94BDEC"), 
-                     labels = c("Ash species", "American Beech", "Paw paw"),
+  scale_color_manual(values = c("Paw paw" = "#94BDEC", "Ash" = "#76AB81", "American Beech" = "#F9CB80"), 
+                     labels = c("Paw paw", "Ash species", "American Beech"),
                      name = "Species:",
                      drop = FALSE)+
   theme(legend.position = 'bottom', legend.title = element_text(size = 10), 
@@ -352,20 +377,22 @@ leg_bar_spp <- ggplot(data = data.frame(spgrp = c("Exotic", "NatOth"),
 
 leg_gbar_spp <- gtable_filter(ggplot_gtable(ggplot_build(leg_bar_spp)), "guide-box")
 
+head(comp_final)
 
 p <- 
-  ggplot(comp_spp, 
-         aes(x = Metric, y = Mean, fill = Species)) +
-  geom_bar(stat = 'identity') + facet_wrap(~park_order, ncol = 8) + 
+  ggplot(comp_final, 
+         aes(x = Metric, y = Prop, fill = Species)) +
+  geom_bar(stat = 'identity') + 
+  facet_wrap(~park_order, ncol = 8) + 
   labs(y = "Average % of Total Saplings or Seedlings", x = NULL) + 
   
   scale_y_continuous(limits = c(0,1),
                      breaks = c(0.00, 0.25, 0.50, 0.75, 1.00),
                      labels = c("0", "25", "50", "75", "100"))+
-  scale_fill_manual(values = c("Ash" = "#76AB81", #"#A87000", 
-                               "American Beech" = "#F9CB80", 
-                               "Paw paw" = "#94BDEC"), 
-                    labels = c("Ash spp.", "American Beech", "Pawpaw"),
+  scale_fill_manual(values = c("Paw paw" = "#94BDEC",
+                               "Ash species" = "#76AB81", #"#A87000", 
+                               "American Beech" = "#F9CB80"), 
+                    labels = c("Paw paw", "Ash species", "American Beech"),
                     name = "Species:",
                     drop = FALSE)+
   coord_flip()+

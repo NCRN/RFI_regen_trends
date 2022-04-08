@@ -133,7 +133,7 @@ tree_dbh_dist$strp_col <- case_when(tree_dbh_dist$Network == "ERMN" ~ "#A5BDCD",
                                     tree_dbh_dist$Network == "NCRN" ~ "#E1E59B",
                                     tree_dbh_dist$Network == "NETN" ~ "#AACCA7") 
 
-write.csv(tree_dbh_dist, paste0(datapath, "Tree_DBH_Dist_by_park.csv"), row.names = FALSE)
+write.csv(tree_dbh_dist, paste0("./results/Tree_DBH_Dist_by_park.csv"), row.names = FALSE)
 
 park_cols <- rbind(data.frame(park_ord = "BLNK", strp_col = "white"), # placeholder for bottom right corner that's blank
                    unique(data.frame(park_ord = tree_dbh_dist$park_ord,

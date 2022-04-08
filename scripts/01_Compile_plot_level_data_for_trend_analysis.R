@@ -1857,7 +1857,8 @@ load_data <- function(network, file, path = datapath){
 }
 
 # Load tree spp. list we decided on as a group 2/3/2021
-tree_spp_list <- read.csv(paste0(datapath, "NPS_count_plots_w_species_by_park.csv"))[,1:2] 
+spp_list <- read.csv(paste0(datapath, "NPS_tree_species_groups.csv")) 
+#tree_spp_list <- read.csv(paste0(datapath, "NPS_count_plots_w_species_by_park.csv"))[,1:2] 
 
 #----- Combine plot and event data -----
 # Load metadata about plot size and number
@@ -1965,49 +1966,16 @@ sap_comb <- rbind(ermn_saps[, sap_names],
 regen_comb <- rbind(sap_comb, seed_comb)
 
 # Merge regen with tree species groupings
-regen_spp <- merge(regen_comb, tree_spp_list, by.x = "Latin_Name", by.y = "Species", all.x = T, all.y = F)
-head(regen_spp)
-
-# Fixing missing group by hand
-missing_spp <- unique(regen_spp$Latin_Name[is.na(regen_spp$Group)])
-missing_spp
-
-# > missing_spp
-
-# [1] "Acer palmatum"          "Albizia julibrissin"    "Amelanchier canadensis" "Aralia elata"          
-# [5] "Betulaceae"             "Carya spp."             "Castanea pumila"        "Celtis laevigata"      
-# [9] "Cornus spp."            "Crataegus macrosperma"  "Crataegus sp. B"        "Fabaceae"              
-# [13] "Fraxinus spp."          "Nyssa biflora"          "Persea"                 "Photinia villosa"      
-# [17] "Populus alba"           "Populus sp."            "Prunus cerasus"         "Prunus spp."           
-# [21] "Rosaceae"               "Ulmus spp."             "Unknown Conifer"        "Unknown Hardwood"      
-# [25] "Unknown species"        "Unknown Tree"           "Unknown Tree - 01"      "Unknown Tree - 02"     
-# [29] "Unknown Tree - 04" 
-
-fixes <- data.frame(latin = missing_spp, 
-                    group = c("Exotic", "Exotic", "Amelanchier sp.", "Exotic", 
-                              "Other Native", "Carya sp.", "Understory Tree", "Celtis sp.",
-                              "Understory Tree", "Post Ag", "Post Ag", "Unk",
-                              "Fraxinus sp.", "Other Native", "Understory Tree", "Exotic",
-                              "Exotic", "Other Native", "Exotic", "Prunus sp.",
-                              "Unk", "Ulmus sp.", "Unk", "Unk",
-                              "Unk", "Unk", "Unk", "Unk", 
-                              "Unk"))
-
-regen_spp2 <- merge(regen_spp, fixes, by.x = "Latin_Name", by.y = "latin", all.x = T) %>% 
-  mutate(Group = ifelse(is.na(Group), group, Group)) %>% select(-group)
-
-table(complete.cases(regen_spp2$Group)) # every spp. has a group
+names(regen_comb)
+names(spp_list)
+regen_spp <- merge(regen_comb, spp_list, by.x = "Latin_Name", by.y = "Species", all.x = T, all.y = F)
+regen_spp$Native <- ifelse(regen_spp$Latin_Name == "Robinia pseudoacacia" & 
+                           regen_spp$network == 'NETN', 0, regen_spp$Native)
+table(regen_spp$Native, regen_spp$network)
 
 #------ Calculate stocking index ------
-# Use Group to drop exotic and non-canopy trees
-sort(unique(regen_spp2$Group))
-drops <- c("Asimina triloba", "Ilex opaca", "Juniperus virginiana", 
-           "Fraxinus americana", "Fraxinus sp.",
-           "Exotic",  "Post Ag", "Understory Tree", "Unk")
-
-# Drop groups and summarize regen at plot/visit level
-regen_sum <- regen_spp2 %>% filter(!Group %in% drops) %>%
-  filter(!(network == "NETN" & Group == "Robinia pseudoacacia")) %>%  # exotic in NETN
+# Use Canopy_Tree and Native columns to drop exotic and non-canopy trees
+regen_sum <- regen_spp %>% filter(Canopy_Tree == 1 & Native == 1) %>%
   group_by(Plot_Name, network, Unit_Code, Sample_Year, size_class) %>% 
   summarize(num_stems = sum(tally), 
             .groups = 'drop')

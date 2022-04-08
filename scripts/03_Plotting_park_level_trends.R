@@ -6,23 +6,17 @@ library(gtable)
 
 options("scipen" = 100, "digits" = 4) # keeps scientific notation from showing up
 
-datapath <- "D:/NETN/R_Dev/NPSForVeg_Data/"
-dens_df <- read.csv(paste0(datapath, "EFWG_full_dataset_20211101.csv"))
+dens_df <- read.csv("./data/EFWG_full_dataset_20220325.csv")
 dens_df$park_ord <- reorder(dens_df$Unit_Code, desc(dens_df$lat_rank))
 names(dens_df)
 dens_df <- dens_df[,c(1:16, 87, 17:86)]
 
 tree_dbh_dist <- read.csv("./results/Tree_DBH_Dist_by_park.csv")
 
-boot_results1 <- read.csv("./results/20220325/all_metrics_randint_20220325.csv")
-#boot_results_spp <- read.csv("./results/20220325/spp_metrics_randint_20220325.csv")
-#boot_results_comb <- rbind(boot_results1, boot_results_spp)
-
-lat_rank <- read.csv(paste0(datapath, "EFWG_lat_order.csv"))[,c("park", "network", "lat.rank")]
-boot_results <- left_join(boot_results1, lat_rank, by = 'park') %>% rename(lat_rank = lat.rank)
+boot_results <- read.csv("./results/20220325/all_metrics_randint_20220325.csv")
 boot_results$park_ord <- reorder(boot_results$park, desc(boot_results$lat_rank))
-boot_results$network[boot_results$park %in% c("COLO", "SAHI", "THST")] <- "NCBN" # in case this hasn't been changed
-boot_results$network_ord <- factor(boot_results$network, levels = c("NETN", "ERMN", "NCRN", "NCBN", "MIDN"))
+boot_results$Network[boot_results$park %in% c("COLO", "SAHI", "THST")] <- "NCBN" # in case this hasn't been changed
+boot_results$network_ord <- factor(boot_results$Network, levels = c("NETN", "ERMN", "NCRN", "NCBN", "MIDN"))
 table(boot_results$network)
 
 #---- Set up lists to iterate over ----
@@ -86,14 +80,16 @@ park_met_list$var <- gsub(sppgrp_list, "", park_met_list$metrics)
 
 park_list <- c(park_met_list[,1])
 met_list <- c(park_met_list[,2])
+head(boot_results)
 
-boot_results$strp_col <- case_when(boot_results$network == "ERMN" ~ "#A5BDCD",
-                                   boot_results$network == "MIDN" ~ "#E7CDA4",
-                                   boot_results$network == "NCBN" ~ "#CFB9D9",
-                                   boot_results$network == "NCRN" ~ "#E1E59B",
-                                   boot_results$network == "NETN" ~ "#AACCA7") 
+# boot_results already has these columns, so turning off for now.
+# boot_results$strp_col <- case_when(boot_results$Network == "ERMN" ~ "#A5BDCD",
+#                                    boot_results$Network == "MIDN" ~ "#E7CDA4",
+#                                    boot_results$Network == "NCBN" ~ "#CFB9D9",
+#                                    boot_results$Network == "NCRN" ~ "#E1E59B",
+#                                    boot_results$Network == "NETN" ~ "#AACCA7") 
 
-boot_results <- boot_results %>% rename(Network = network)
+# boot_results <- boot_results %>% rename(Network = network)
 
 #----- Total plots -----
 # Fake plot to customize trend legend
