@@ -750,7 +750,7 @@ regstat_group <- status_met_long_final %>% filter(metgrp == "Status") %>%
                                park_reggrp = case_when(num_crit > 5 ~ "Imminent Failure",
                                                        between(num_crit, 4, 5) ~ "Probable Failure",
                                                        between(num_crit, 1, 3) ~ "Insecure",
-                                                       num_crit == 0 ~ "Sec.",
+                                                       num_crit < 2 ~ "Sec.",
                                                        TRUE ~ 'undefined'))
 
 results_comb <- rbind(status_met_long_final, result_sum3) %>% arrange(park, order) 
@@ -840,7 +840,7 @@ results_plot <-
 
 results_plot
 
-write.csv(results_final, "./results/20220325/results_for_Fig2.csv", row.names = F)
+write.csv(results_final, "./results/20220325/results_for_Fig2_ash_subcan.csv", row.names = F)
 
 ggsave("./results/20220325/results_grid_symbols_20220405.svg", 
        height = 8, width = 11, units = 'in')
