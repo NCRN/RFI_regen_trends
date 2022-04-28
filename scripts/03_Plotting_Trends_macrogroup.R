@@ -536,28 +536,21 @@ head(boot_results)
 #----- RESULTS GRID -----
 
 # Trend metrics
-tile_metrics <- data.frame(resp = c("Tree_BA_Total", "Tree_Dens_Total", "Sap_BA_Total", "Sap_Dens_Total", 
-                                    "Seed_Dens_Total",
-                                    "Tree_BA_NatCan", "Tree_Dens_NatCan", "Sap_BA_NatCan", "Sap_Dens_NatCan", 
+tile_metrics <- data.frame(resp = c("Tree_BA_NatCan", "Tree_Dens_NatCan", "Sap_BA_NatCan", "Sap_Dens_NatCan", 
                                     "Seed_Dens_NatCan",
                                     "Tree_BA_NatOth", "Tree_Dens_NatOth", "Sap_BA_NatOth", "Sap_Dens_NatOth", 
                                     "Seed_Dens_NatOth",
                                     "Tree_BA_Exotic", "Tree_Dens_Exotic", "Sap_BA_Exotic", "Sap_Dens_Exotic", 
                                     "Seed_Dens_Exotic",
-                                    "stock_final", 
-                                    "Sor_sap", "Hor_sap", "Sor_seed", "Hor_seed"),
+                                    "stock_final"),
                            labels = c("Tree BA", "Tree Density", "Sapling BA", 
                                       "Sapling Density", "Seedling Density", 
                                       "Tree BA", "Tree Density", "Sapling BA", 
                                       "Sapling Density", "Seedling Density", 
                                       "Tree BA", "Tree Density", "Sapling BA", 
                                       "Sapling Density", "Seedling Density", 
-                                      "Tree BA", "Tree Density", "Sapling BA", 
-                                      "Sapling Density", "Seedling Density", 
-                                      "Stocking Index", 
-                                      "Sorensen Sapling", "Horn Sapling",
-                                      "Sorensen Seedling", "Horn Seedling"),
-                           order = 10:34) # first 9 are status metrics
+                                      "Stocking Index"),
+                           order = 10:25) # first 9 are status metrics
 #1:15)
 
 tile_metrics
@@ -578,14 +571,14 @@ result_sum2 <- result_sum %>% group_by(mg_ord) %>%
 #result_sum2$num_sign_bad[result_sum2$park %in% c("SAHI", "WOTR")] <- -1
 #result_sum2$label_order <- reorder(result_sum2$labels, desc(result_sum2$order))
 #result_sum2$park_order <- reorder(result_sum2$park, desc(result_sum2$num_sign_bad))
-result_sum2 <- result_sum2 %>% mutate(metgrp = factor(case_when(grepl("Total", resp) ~ "Total",
-                                                                grepl("NatCan|stock", resp) ~ "Native Canopy",
-                                                                grepl("NatOth", resp) ~ "Native Subcan.",
-                                                                grepl("Exotic", resp) ~ "Exotic",
-                                                                grepl("Sor|Hor", resp) ~ "Similarity", 
-                                                                TRUE ~ "Unk"),
-                                                      levels = c("Total", "Native Canopy", "Native Subcan.",
-                                                                 "Exotic", "Similarity")
+result_sum2 <- result_sum2 %>% mutate(
+  metgrp = factor(case_when(#grepl("Total", resp) ~ "Total",
+                   grepl("NatCan|stock", resp) ~ "Native Canopy \n Trends",
+                   grepl("NatOth", resp) ~ "Native Subcan. \n Trends",
+                   grepl("Exotic", resp) ~ "Exotic \n Trends",
+                  #grepl("Sor|Hor", resp) ~ "Similarity", 
+                   TRUE ~ "Unk"),
+ levels = c("Native Canopy \n Trends", "Native Subcan. \n Trends", "Exotic \n Trends")
 )) %>% select(mg_short, order, labels, metgrp, sign)
 head(result_sum2)
 # decided to drop similarity trends because more confusing than helpful
@@ -653,10 +646,11 @@ status_metrics_3 <- status_metrics_3 %>% select(mg_short, avg_sap_dens:`Stocking
 
 status_met_long <- status_metrics_3 %>% select(mg_short, `Sapling Density`:`Flat Tree Diam. Dist.`) %>% 
   pivot_longer(-mg_short, names_to = "labels", values_to = "sign") %>% 
-  mutate(metgrp = "Status", order = rep(c(1:2,4:10), 8)) %>%
+  mutate(metgrp = "Regen. Status", order = rep(c(1:2,4:10), 8)) %>%
   select(mg_short, order, labels, metgrp, sign)
 
 head(status_met_long)
+
 
 # Add proportion of stocked plots based on park average DBI
 dens_c3 <- dens_df %>% filter(cycle == 3) 
@@ -678,7 +672,7 @@ dbi_stock_sum <- dbi_stock_c3 %>% group_by(mg_short) %>%
 table(dbi_stock_sum$avg_DBI)
 
 prop_stock <- dbi_stock_sum %>% mutate(labels = "% Stocked Plots",
-                                       metgrp = "Status", 
+                                       metgrp = "Regen. Status", 
                                        sign = case_when(prop_stocked < 0.33 ~ "critical", 
                                                         between(prop_stocked, 0.33, 0.669) ~ 'caution', 
                                                         prop_stocked > 0.67 ~ "acceptable",
@@ -688,42 +682,47 @@ prop_stock <- dbi_stock_sum %>% mutate(labels = "% Stocked Plots",
 head(prop_stock)
 head(status_met_long)
 
-#results_comb <- rbind(status_met_long, prop_stock, result_sum3) %>% arrange(park, order) 
-
-# 4 groups instead of 5
-
-# reg_stat_1 <- c("ANTI", "CATO", "CHOH", "GEWA", "HAFE", "MANA", "MIMA", "MORR", "ROVA", "SAHI", "THST", "VAFO", "WEFA")
-# reg_stat_2 <- c("COLO", "FRSP", "HOFU", "NACE", "PRWI", "ROCR", "SARA")
-# reg_stat_3 <- c("ALPO", "GWMP", "JOFL", "MONO", "RICH", "WOTR")
-# reg_stat_4 <- c("APCO", "BLUE", "BOWA", "DEWA", "FONE", "FRHI", "GARI", "MABI", "NERI", "PETE", "SAGA")
-# reg_stat_5 <- c("ACAD", "GETT")
+# Determing groupings based on # critical status metrics
 
 results_comb <- rbind(status_met_long, prop_stock, result_sum3) %>% arrange(mg_short, order) 
-
-# results_comb <- results_comb %>% 
-#   mutate(park_reggrp = case_when(park %in% reg_stat_1 ~ "Imminent Failure",
-#                                  park %in% c(reg_stat_2, reg_stat_3) ~ "Probable Failure",
-#                                  park %in% reg_stat_4 ~ "Insecure", 
-#                                  park %in% reg_stat_5 ~ "Secure",
-#                                  TRUE ~ NA_character_))
-
 head(results_comb)
 
-results_comb$label_order <- factor(results_comb$labels, 
-                                   levels = c("Tree BA", "Tree Density", "Sapling BA", "Sapling Density", "Seedling Density", 
-                                              "% Stocked Plots", "Stocking Index","Deer Browse Impacts", "Flat Tree Diam. Dist.",
-                                              "Sapling Composition", "Seedling Composition", 
-                                              "Sorensen Sapling", "Sorensen Seedling"))
+regstat_group <- results_comb %>% filter(metgrp == "Regen. Status") %>% 
+  group_by(mg_short) %>% summarize(num_crit = sum(sign == "critical", na.rm = T),
+                               mg_reggrp = case_when(num_crit > 5 ~ "Imminent Failure",
+                                                       between(num_crit, 4, 5) ~ "Probable Failure",
+                                                       between(num_crit, 1, 3) ~ "Insecure",
+                                                       num_crit < 2 ~ "Secure",
+                                                       TRUE ~ 'undefined'))
 
-results_comb$metgrp <- factor(results_comb$metgrp, levels = c("Status", "Total", "Native Canopy", "Native Subcan.",
-                                                              "Exotic"))
+results_comb2 <- left_join(results_comb, regstat_group, by = 'mg_short') %>% arrange(mg_short, order)
 
-# results_comb$park_reggrp <- factor(results_comb$park_reggrp, levels = c("Imminent Failure", "Probable Failure", "Insecure", "Secure"))
-results_final <- left_join(mg_df_simp %>% select(-MACROGROUP_NAME), 
-                           results_comb, by = "mg_short") %>% 
-  arrange(lat_rank, metgrp, label_order)
+results_comb2$label_order <- factor(results_comb2$labels, 
+                                    levels = c("Tree BA", "Tree Density", "Sapling BA", "Sapling Density", "Seedling Density", 
+                                               "% Stocked Plots", "Stocking Index","Deer Browse Impacts", "Flat Tree Diam. Dist.",
+                                               "Sapling Composition", "Seedling Composition", 
+                                               "Sorensen Sapling", "Sorensen Seedling"))
 
-results_final$mg_ord <- reorder(results_final$mg_short, desc(results_final$lat_rank))
+results_comb2$metgrp <- factor(results_comb2$metgrp, levels = c("Regen. Status", "Native Canopy \n Trends", "Native Subcan. \n Trends",
+                                                                "Exotic \n Trends"))
+
+results_comb2$mg_reggrp <- factor(results_comb2$mg_reggrp, levels = c("Imminent Failure", "Probable Failure", "Insecure", "Secure"))
+
+
+results_final <- results_comb2 %>% 
+                   mutate(mg_shorter = case_when(
+                     mg_short == "Appalachian Mesic" ~ "App. Mesic",
+                     mg_short == "Northern Ruderal" ~ "North. Ruderal",
+                     mg_short == "Southern Ruderal" ~ "South. Ruderal",
+                     mg_short == "Northern Oak - Pine" ~ "North. Oak-Pine",
+                     mg_short == "Southern Oak - Pine" ~ "South. Oak-Pine",
+                     TRUE ~ mg_short
+                   )) 
+
+results_final$mg_ord <- reorder(results_final$mg_shorter, desc(results_comb2$num_crit))
+results_final <- results_final %>% arrange(mg_ord, metgrp, label_order) 
+
+#results_final$mg_ord <- reorder(results_final$mg_short, desc(results_final$lat_rank))
 
 results_plot <- 
   ggplot(results_final, aes(x = mg_ord, y = label_order))+
@@ -735,7 +734,7 @@ results_plot <-
                                   sign == "signdec_good" ~ "-",
                                   sign == "signinc_good" ~ "+", 
                                   TRUE ~ "")))+
-  facet_grid(metgrp ~ mg_ord, scales = 'free', space = 'free', switch = "y")+
+  facet_grid(metgrp ~ mg_reggrp, scales = 'free', space = 'free', switch = "y")+
   scale_fill_manual(values = c('critical' = "#FF5B5B", 
                                'caution' = "#FFFF79",
                                'acceptable' = '#BDEBA7',
@@ -757,7 +756,7 @@ results_plot <-
   scale_x_discrete(position = 'top')+
   scale_y_discrete(limits = rev)+
   theme_bw()+
-  theme(axis.text.x = element_blank(),
+  theme(#axis.text.x = element_blank(),
         #axis.text.x = element_text(angle = 45, hjust = 0, size = 10),
         axis.ticks = element_blank(),
         axis.text = element_text(size = 9),
@@ -777,7 +776,7 @@ results_plot <-
 
 results_plot
 
-ggsave("./results/20220325/results_grid_symbols_mg.svg", 
+ggsave("./results/20220325/results_grid_symbols_mg_20220426.svg", 
        height = 8, width = 11, units = 'in')
 
 # Had to open the svg in notepad and tweak the legend by hand to get symbols and

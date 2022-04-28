@@ -1,7 +1,7 @@
 library(tidyverse)
 
 reg_stat <- read.csv("./results/20220325/results_for_Fig2_ash_subcan.csv") %>% 
-  filter(park == "GETT") %>% mutate(type = "Probable Failure \n Ash as Subcan.")
+  filter(park == "GETT") %>% mutate(type = "Prob. Failure \n Ash as Subcan.")
 reg_stat_frax <- read.csv("./results/20220325/results_for_Fig2_ash_as_can.csv") %>% 
   mutate(type = "Secure \n Ash as Canopy")
 
@@ -12,21 +12,32 @@ reg_comb <- rbind(reg_stat, reg_stat_frax) %>% arrange(desc(type), order)
 #reg_comb$type_ord <- reorder(reg_comb$type, desc(reg_comb$type))
 head(reg_comb)
 
+reg_comb$park_reggrp[reg_comb$park_reggrp %in% "Sec."] <- "Secure"
+reg_comb$labels[reg_comb$labels == "Seedling Composition"] <- "Seedling Comp."
+reg_comb$labels[reg_comb$labels == "Sapling Composition"] <- "Sapling Comp."
+
 reg_comb$label_order <- factor(reg_comb$labels, 
                                levels = c("Tree BA", "Tree Density", "Sapling BA", "Sapling Density", "Seedling Density", 
                                           "% Stocked Plots", "Stocking Index","Deer Browse Impacts", "Flat Tree Diam. Dist.",
-                                          "Sapling Composition", "Seedling Composition", 
+                                          "Sapling Comp.", "Seedling Comp.", 
                                           "Sorensen Sapling", "Sorensen Seedling"))
 
-reg_comb$metgrp <- factor(reg_comb$metgrp, levels = c("Status", "Total", "Native Canopy", "Native Subcan.",
-                                                      "Exotic"))
+reg_comb2 <- reg_comb %>% filter(metgrp != "Total") %>% 
+             mutate(metgrp = case_when(metgrp == 'Status' ~ "Regen. Status",
+                                       metgrp == 'Native Canopy' ~ 'Native Canopy \n Trends',
+                                       metgrp == 'Native Subcan.' ~ 'Native Subcan. \n Trends',
+                                       metgrp == 'Exotic' ~ 'Exotic \n Trends'
+             ))
+
+reg_comb2$metgrp <- factor(reg_comb2$metgrp, levels = c("Regen. Status",  "Native Canopy \n Trends", "Native Subcan. \n Trends",
+                                                        "Exotic \n Trends"))
 #reg_comb$type <- reorder(reg_comb$type, desc(reg_comb$type))
 head(reg_comb)
 
 #write.csv(reg_comb, "./results/20220325/results_for_Fig2_ash_can_nocan.csv", row.names = F)
 
 results_plot <- 
-  ggplot(reg_comb, aes(x = type, y = label_order))+
+  ggplot(reg_comb2, aes(x = type, y = label_order))+
   geom_tile(aes(fill = sign), color = 'grey')+
   geom_text(aes(label = case_when(sign == "critical" ~ "●",
                                   sign == "caution" ~ "○",
