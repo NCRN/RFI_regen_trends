@@ -277,10 +277,10 @@ results_plot <-
   scale_x_discrete(position = 'top')+
   scale_y_discrete(limits = rev)+
   theme_bw()+
-  theme(axis.text.x = element_text(angle = 90),
-        axis.text = element_text(size = 10),
+  theme(axis.text.x.top = element_text(angle = 90, size = 10, hjust = 0, vjust = 0.5),
+        axis.text.y = element_text(size = 9),
         strip.text.y = element_text(size = 10),
-        strip.text.x = element_text(size = 10),
+        strip.text.x = element_text(size = 9.5),
         text = element_text(size = 9),
         #strip.placement = 'outside',
         legend.spacing.x = unit(0.5, 'cm'),
