@@ -602,8 +602,8 @@ status_metrics_3a <- dens_df %>% filter(cycle == 3) %>%
             avg_dbi = mean(DBI, na.rm = T)) %>% ungroup() %>% 
   
   mutate(`Sapling Density` = case_when(avg_sap_dens < 0.1 ~ "critical", 
-                                       between(avg_sap_dens, 0.1, 0.3) ~ "caution",
-                                       avg_sap_dens > 0.3 ~ "acceptable",
+                                       between(avg_sap_dens, 0.1, 0.16) ~ "caution",
+                                       avg_sap_dens > 0.16 ~ "acceptable",
                                        TRUE ~ "unknown"),
          `Seedling Density` = case_when(avg_seed_dens < 0.25 ~ "critical", 
                                         between(avg_seed_dens, 0.25, 1.99) ~ "caution",
