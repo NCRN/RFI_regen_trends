@@ -133,7 +133,7 @@ status_metrics_3a <- dens_df %>% filter(cycle == 3) %>%
          `Sorensen Sapling` = ifelse(avg_sor_sap < 0.2, "critical", "acceptable"),
          `Sorensen Seedling` = ifelse(avg_sor_seed < 0.2, "critical", "acceptable"),
          `Deer Browse Impacts` = case_when(avg_dbi >= 4 ~ 'critical', 
-                                           between(avg_dbi, 3.01, 4) ~ 'caution', 
+                                           between(avg_dbi, 3.01, 3.99) ~ 'caution', 
                                            avg_dbi <= 3 ~ 'acceptable',
                                            TRUE ~ "unknown"),
          `Flat Tree Diam. Dist.` = ifelse(Unit_Code %in% c('SAHI', 'MORR'), "critical", "acceptable"))

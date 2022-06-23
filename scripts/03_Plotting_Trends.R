@@ -656,8 +656,8 @@ status_metrics_3a <- dens_df %>% filter(cycle == 3) %>%
             avg_dbi = mean(DBI, na.rm = T)) %>% ungroup() %>% 
   
   mutate(`Sapling Density` = case_when(avg_sap_dens < 0.1 ~ "critical", 
-                                       between(avg_sap_dens, 0.1, 0.3) ~ "caution",
-                                       avg_sap_dens > 0.3 ~ "acceptable",
+                                       between(avg_sap_dens, 0.1, 0.15999) ~ "caution",
+                                       avg_sap_dens > 0.16 ~ "acceptable",
                                        TRUE ~ "unknown"),
          `Seedling Density` = case_when(avg_seed_dens < 0.25 ~ "critical", 
                                         between(avg_seed_dens, 0.25, 1.99) ~ "caution",
@@ -670,7 +670,7 @@ status_metrics_3a <- dens_df %>% filter(cycle == 3) %>%
          `Sorensen Sapling` = ifelse(avg_sor_sap < 0.2, "critical", "acceptable"),
          `Sorensen Seedling` = ifelse(avg_sor_seed < 0.2, "critical", "acceptable"),
          `Deer Browse Impacts` = case_when(avg_dbi >= 4 ~ 'critical', 
-                                           between(avg_dbi, 3.01, 4) ~ 'caution', 
+                                           between(avg_dbi, 3.01, 3.99) ~ 'caution', 
                                            avg_dbi <= 3 ~ 'acceptable',
                                            TRUE ~ "unknown"),
          `Flat Tree Diam. Dist.` = ifelse(Unit_Code %in% c('SAHI', 'MORR'), "critical", "acceptable"))
