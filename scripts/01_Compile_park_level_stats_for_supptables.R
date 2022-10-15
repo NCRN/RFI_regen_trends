@@ -897,6 +897,8 @@ write.csv(AIC_test, "./results/supptables/Flat_Tree_Diameter_Dist_AIC.csv", row.
 #---- Clean up trend results table -----
 results1 <- read.csv("./results/20220325/all_metrics_randint_20220325.csv")
 head(results1)
+
+results <- results1 %>% 
   mutate(response_full = case_when(
     resp == "Hor_sap" ~ "Sapling vs. Tree Similarity: Horn", 
     resp == "Hor_seed" ~ "Seedling vs. Tree Similarity: Horn", 
@@ -960,6 +962,8 @@ reg_df <- read.csv("./data/RFI_data_for_reg.csv") %>%
   select(Plot_Name, Park, hummod300m, DBI, Province = PROVINCE, Physiographic_Class, 
          cancov, tmax, precip, stage_fac, QMD, mDBH, Tree_Dens_Total,
          avg.cover)
+
+summary(reg_df$cancov)
 
 dbi <- reg_df %>% group_by(Park, DBI) %>% summarize(num_plots = n()) %>% 
   pivot_wider(names_from = DBI, values_from = num_plots, names_prefix = "DBI_", values_fill = 0)
