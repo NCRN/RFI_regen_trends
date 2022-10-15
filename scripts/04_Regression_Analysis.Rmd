@@ -162,7 +162,7 @@ hist(residuals(sap_comb))
 
 <details open><summary class='drop'>Model Output</summary>
 ```{r, echo = F}
-tab_model(sap_comb)
+tab_model(sap_comb, show.se = TRUE, digits = 2)
 ```
 </details>
 
@@ -226,7 +226,7 @@ hist(residuals(stock_comb))
 
 <details open><summary class='drop'>Model Output</summary>
 ```{r}
-tab_model(stock_comb)
+tab_model(stock_comb, show.se = TRUE, digits = 2)
 ```
 </details>
 <br>
@@ -295,7 +295,7 @@ hist(residuals(sorseed_stress))
 
 <details open><summary class='drop'>Model Output</summary>
 ```{r}
-tab_model(sorseed_stress)
+tab_model(sorseed_stress, show.se = TRUE, digits = 2)
 ```
 </details>
 <br>
@@ -364,7 +364,7 @@ hist(residuals(sorsap_fstr))
 
 <details open><summary class='drop'>Model Output</summary>
 ```{r}
-tab_model(sorsap_fstr)
+tab_model(sorsap_fstr, show.se = TRUE, digits = 2)
 ```
 </details>
 <br>
@@ -427,28 +427,39 @@ pred_plot <- function(df, xvar, yvar, xlab, ylab, grp = "DBI2"){
   df$grp_fac <- as.factor(df[,grp])
   
   ggplot(df, aes_string(x = xvar, y = yvar, group = "grp_fac", 
-                        color = "grp_fac")) +
+                        color = "grp_fac", shape = 'grp_fac', fill = 'grp_fac')) +
     geom_line() + 
     geom_point() + 
     theme_bw() + 
-    facet_wrap(~physio) +
+    facet_wrap(~physio, ncol = 4) +
     scale_color_manual(values = dbi_cols, 
                        labels = c("Low/Medium", "High", "Very High"), 
                        name = "Deer Browse Impact") +
+    scale_fill_manual(values = dbi_cols,
+                      labels = c("Low/Medium", "High", "Very High"),
+                      name = "Deer Browse Impact") +
+    scale_shape_manual(values = c(25, 21, 24), labels = c("Low/Medium", "High", "Very High"),
+                       name = "Deer Browse Impact") +
     labs(x = xlab, y = ylab) +
-    theme(panel.grid = element_blank())
+    theme(panel.grid = element_blank(),
+          legend.position = 'bottom',
+          legend.text = element_text(size = 12),
+          legend.title = element_text(size = 12),
+          strip.text = element_text(size = 12),
+          axis.text = element_text(size = 12),
+          axis.title = element_text(size = 12))
 
 }
 
 # DBI vs Invasive Cover
 seed_plot_inv <- pred_plot(reg_new, xvar = "avg.cover", yvar = "pred_seed_tr", 
-                   "Average Invasive % Cover", "Predicted Seedling Density (stems/sq.m)")
+                   "Average Invasive % Cover", "Seedling Density (stems/sq.m)")
 
 sap_plot_inv <- pred_plot(reg_new, xvar = "avg.cover", yvar = "pred_sap_tr", 
-                   "Average Invasive % Cover", "Predicted Sapling Density (stems/sq.m)")
+                   "Average Invasive % Cover", "Sapling Density (stems/sq.m)")
 
 stock_plot_inv <- pred_plot(reg_new, xvar = "avg.cover", yvar = "pred_stock_tr", 
-                   "Average Invasive % Cover", "Predicted Stocking Index")
+                   "Average Invasive % Cover", "Stocking Index")
 
 # DBI vs Tree_Dens_Total
 new_df2 <- data.frame(
@@ -618,7 +629,7 @@ Best Model:
 <br>
 
 ```{r, echo = F}
-tab_model(seed_comb)
+tab_model(seed_comb, show.se = TRUE, digits = 2)
 ```
 </details>
 <br>
@@ -653,11 +664,11 @@ sap_tab
 <details open><summary class='drop'><b>ANOVA Table</b></summary>
 
 Best Model: 
-`r format(formula(sap_comb_int))`
+`r format(formula(sap_comb))`
 <br>
 
 ```{r, echo = F}
-tab_model(sap_comb_int)
+tab_model(sap_comb, show.se = TRUE, digits = 2)
 ```
 </details>
 <br>
@@ -696,7 +707,7 @@ Best Model:
 <br>
 
 ```{r, echo = F}
-tab_model(stock_comb)
+tab_model(stock_comb, show.se = TRUE, digits = 2)
 ```
 </details>
 <br>
@@ -735,7 +746,7 @@ Best Model:
 <br>
 
 ```{r, echo = F}
-tab_model(sorseed_stress)
+tab_model(sorseed_stress, show.se = TRUE, digits = 2)
 ```
 </details>
 <br>
@@ -764,7 +775,7 @@ Best Model:
 <br>
 
 ```{r, echo = F}
-tab_model(sorsap_fstr)
+tab_model(sorsap_fstr, show.se = TRUE, digits = 2)
 ```
 </details>
 <br>
